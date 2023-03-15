@@ -1,6 +1,7 @@
 package web
 
 import (
+	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/database"
 	"fmt"
 	"strings"
@@ -29,7 +30,7 @@ func ShowLoginForm() fiber.Handler {
 		err := ctx.Render("login", fiber.Map{})
 		if err != nil {
 			if err2 := ctx.Status(500).SendString(err.Error()); err2 != nil {
-				panic(err2.Error())
+				return utils.SendError(ctx, err2.Error(), fiber.StatusInternalServerError)
 			}
 		}
 		return err
@@ -42,7 +43,7 @@ func PostLoginForm(hasher hashing.Driver, session *session.Session, db *database
 		// Find user
 		user, err := FindUserByUsername(db, username)
 		if err != nil {
-			ctx.Status(404).SendString("User not found")
+			return utils.SendError(ctx, "User not found", fiber.StatusNotFound)
 		}
 
 		// Check if password matches hash
@@ -50,7 +51,7 @@ func PostLoginForm(hasher hashing.Driver, session *session.Session, db *database
 			password := ctx.FormValue("password")
 			match, err := hasher.MatchHash(password, user.Password)
 			if err != nil {
-				ctx.Status(500).SendString("Password parsing failed")
+				return utils.SendError(ctx, "Password parsing failed", fiber.StatusInternalServerError)
 			}
 			if match {
 				store := session.Get(ctx)
@@ -59,11 +60,11 @@ func PostLoginForm(hasher hashing.Driver, session *session.Session, db *database
 				store.Set("userid", user.ID)
 				fmt.Printf("User set in session store with ID: %v\n", user.ID)
 				if err := ctx.SendString("You should be logged in successfully!"); err != nil {
-					panic(err.Error())
+					return utils.SendError(ctx, err.Error(), fiber.StatusInternalServerError)
 				}
 			} else {
 				if err := ctx.SendString("The entered details do not match our records."); err != nil {
-					panic(err.Error())
+					return utils.SendError(ctx, err.Error(), fiber.StatusInternalServerError)
 				}
 			}
 		} else {
@@ -87,7 +88,7 @@ func PostLogoutForm(sessionLookup string, session *session.Session, db *database
 				// Unset cookie on client-side
 				ctx.Set("Set-Cookie", split[1]+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; HttpOnly")
 				if err := ctx.SendString("You are now logged out."); err != nil {
-					panic(err.Error())
+					return utils.SendError(ctx, err.Error(), fiber.StatusInternalServerError)
 				}
 				return nil
 			}

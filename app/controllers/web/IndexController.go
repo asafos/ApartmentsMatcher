@@ -1,10 +1,11 @@
 package web
 
 import (
+	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/database"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/session/v2"
-	"log"
 )
 
 func Index(session *session.Session, db *database.Database) fiber.Handler {
@@ -23,7 +24,7 @@ func Index(session *session.Session, db *database.Database) fiber.Handler {
 			userID, _ := store.Get("userid").(int64)
 			user, err := FindUserByID(db, userID)
 			if err != nil {
-				log.Fatalf("Error when finding user by ID: %v", err)
+				return utils.SendError(ctx, "Error when finding user by ID", fiber.StatusInternalServerError)
 			}
 			bind["username"] = user.Name
 		}
@@ -33,7 +34,7 @@ func Index(session *session.Session, db *database.Database) fiber.Handler {
 		if err != nil {
 			err2 := ctx.Status(500).SendString(err.Error())
 			if err2 != nil {
-				panic(err2.Error())
+				return utils.SendError(ctx, err2.Error(), fiber.StatusInternalServerError)
 			}
 		}
 		return err
