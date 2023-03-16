@@ -3,6 +3,7 @@ package api
 import (
 	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/app/models"
+	services "fiber-boilerplate/app/services/api"
 	"fiber-boilerplate/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,11 +12,11 @@ import (
 // Return all roles as JSON
 func GetAllRoles(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		var Role []models.Role
-		if response := db.Find(&Role); response.Error != nil {
+		var Roles []models.Role
+		if response := services.GetAllRoles(db, &Roles); response.Error != nil {
 			utils.SendError(ctx, "Error occurred while retrieving roles from the database: "+response.Error.Error(), fiber.StatusInternalServerError)
 		}
-		err := ctx.JSON(Role)
+		err := ctx.JSON(Roles)
 		if err != nil {
 			utils.SendError(ctx, "Error occurred when returning JSON of roles: "+err.Error(), fiber.StatusInternalServerError)
 		}
@@ -28,7 +29,7 @@ func GetRole(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		Role := new(models.Role)
 		id := ctx.Params("id")
-		if response := db.Find(&Role, id); response.Error != nil {
+		if response := services.GetRole(db, Role, id); response.Error != nil {
 			utils.SendError(ctx, "An error occurred when retrieving the role: "+response.Error.Error(), fiber.StatusBadRequest)
 		}
 		if Role.ID == 0 {
@@ -61,7 +62,7 @@ func AddRole(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(Role); err != nil {
 			utils.SendError(ctx, "An error occurred when parsing the new role: "+err.Error(), fiber.StatusBadRequest)
 		}
-		if response := db.Create(&Role); response.Error != nil {
+		if response := services.AddRole(db, Role); response.Error != nil {
 			utils.SendError(ctx, "An error occurred when storing the new role: "+response.Error.Error(), fiber.StatusInternalServerError)
 		}
 		err := ctx.JSON(Role)
@@ -81,7 +82,7 @@ func EditRole(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(EditRole); err != nil {
 			utils.SendError(ctx, "An error occurred when parsing the edited role: "+err.Error(), fiber.StatusBadRequest)
 		}
-		if response := db.Find(&Role, id); response.Error != nil {
+		if response := services.GetRole(db, Role, id); response.Error != nil {
 			utils.SendError(ctx, "An error occurred when retrieving the existing role: "+response.Error.Error(), fiber.StatusNotFound)
 		}
 		// Role does not exist
@@ -100,7 +101,7 @@ func EditRole(db *database.Database) fiber.Handler {
 		}
 		Role.Name = EditRole.Name
 		Role.Description = EditRole.Description
-		db.Save(&Role)
+		services.EditRole(db, Role)
 
 		err := ctx.JSON(Role)
 		if err != nil {
@@ -115,11 +116,11 @@ func DeleteRole(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 		var Role models.Role
-		db.Find(&Role, id)
-		if response := db.Find(&Role); response.Error != nil {
+		// services.Find(&Role, id)
+		if response := services.GetRole(db, &Role, id); response.Error != nil {
 			utils.SendError(ctx, "An error occurred when finding the role to be deleted: "+response.Error.Error(), fiber.StatusNotFound)
 		}
-		db.Delete(&Role)
+		services.DeleteRole(db, &Role)
 
 		err := ctx.JSON(fiber.Map{
 			"ID":      id,
