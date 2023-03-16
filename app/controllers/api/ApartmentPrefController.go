@@ -3,6 +3,7 @@ package api
 import (
 	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/app/models"
+	services "fiber-boilerplate/app/services/api"
 	"fiber-boilerplate/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,7 +13,7 @@ import (
 func GetAllApartmentPrefs(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		var ApartmentPrefs []models.ApartmentPref
-		if response := db.Preload("ApartmentPrefPrefs").Preload("ApartmentPrefs").Find(&ApartmentPrefs); response.Error != nil {
+		if response := services.GetAllApartmentPrefs(db, &ApartmentPrefs); response.Error != nil {
 			return utils.SendError(ctx, "Error occurred while retrieving apartmentPrefs from the database: "+response.Error.Error(), fiber.StatusInternalServerError)
 		}
 		err := ctx.JSON(ApartmentPrefs)
@@ -28,7 +29,7 @@ func GetApartmentPref(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		ApartmentPref := new(models.ApartmentPref)
 		id := ctx.Params("id")
-		if response := db.Find(&ApartmentPref, id); response.Error != nil {
+		if response := services.GetApartmentPref(db, ApartmentPref, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when retrieving the apartmentPref: "+response.Error.Error(), fiber.StatusInternalServerError)
 		}
 		if ApartmentPref.ID == 0 {
@@ -59,7 +60,7 @@ func AddApartmentPref(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(ApartmentPref); err != nil {
 			return utils.SendError(ctx, "an error occurred when parsing the new apartmentPref", fiber.StatusBadRequest)
 		}
-		if response := db.Create(&ApartmentPref); response.Error != nil {
+		if response := services.AddApartmentPref(db, ApartmentPref); response.Error != nil {
 			return utils.SendError(ctx, "an error occurred when storing the new apartmentPref"+response.Error.Error(), fiber.StatusInternalServerError)
 		}
 		err := ctx.JSON(ApartmentPref)
@@ -79,7 +80,7 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(EditApartmentPref); err != nil {
 			return utils.SendError(ctx, "An error occurred when parsing the edited apartmentPref: "+err.Error(), fiber.StatusBadRequest)
 		}
-		if response := db.Find(&ApartmentPref, id); response.Error != nil {
+		if response := services.GetApartmentPref(db, ApartmentPref, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when retrieving the existing apartmentPref: "+response.Error.Error(), fiber.StatusNotFound)
 		}
 		// ApartmentPref does not exist
@@ -108,7 +109,7 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 		ApartmentPref.Location = EditApartmentPref.Location
 
 		// Save apartmentPref
-		db.Save(&ApartmentPref)
+		services.EditApartmentPref(db, ApartmentPref)
 
 		err := ctx.JSON(ApartmentPref)
 		if err != nil {
@@ -123,11 +124,11 @@ func DeleteApartmentPref(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 		var ApartmentPref models.ApartmentPref
-		db.Find(&ApartmentPref, id)
-		if response := db.Find(&ApartmentPref); response.Error != nil {
+		// services.Find(&ApartmentPref, id)
+		if response := services.GetApartmentPref(db, &ApartmentPref, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when finding the apartmentPref to be deleted"+response.Error.Error(), fiber.StatusNotFound)
 		}
-		db.Delete(&ApartmentPref)
+		services.DeleteApartmentPref(db, &ApartmentPref)
 
 		err := ctx.JSON(fiber.Map{
 			"ID":      id,

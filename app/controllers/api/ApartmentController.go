@@ -124,6 +124,7 @@ func DeleteApartment(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 		var Apartment models.Apartment
+		// services.Find(&Apartment, id)
 		if response := db.Find(&Apartment); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when finding the apartment to be deleted"+response.Error.Error(), fiber.StatusNotFound)
 		}
