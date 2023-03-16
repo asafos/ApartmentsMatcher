@@ -2,17 +2,17 @@ package models
 
 import "time"
 
-type Area string
+type Location string
 
 const (
-	LevTLV      Area = "LevTLV"
-	OldNorth    Area = "OldNorth"
-	NewNorth    Area = "NewNorth"
-	Sarona      Area = "Sarona"
-	NeveTzedek  Area = "NeveTzedek"
-	NeveShaanan Area = "NeveShaanan"
-	Florentin   Area = "Florentin"
-	RamatAviv   Area = "RamatAviv"
+	LevTLV      Location = "LevTLV"
+	OldNorth    Location = "OldNorth"
+	NewNorth    Location = "NewNorth"
+	Sarona      Location = "Sarona"
+	NeveTzedek  Location = "NeveTzedek"
+	NeveShaanan Location = "NeveShaanan"
+	Florentin   Location = "Florentin"
+	RamatAviv   Location = "RamatAviv"
 )
 
 type BoolPref int64
@@ -28,7 +28,7 @@ type Range []int64
 
 type TimeArray []time.Time
 
-type AreaArray []Area
+type LocationArray []Location
 
 type ApartmentArray []Apartment
 

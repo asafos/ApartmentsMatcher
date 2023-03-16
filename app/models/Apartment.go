@@ -19,5 +19,5 @@ type Apartment struct {
 	AnimalsAllowed bool      `json:"animalsAllowed"`
 	Renovated      bool      `json:"renovated"`
 	AvailableDate  time.Time `json:"availableDate"`
-	Area           Area      `json:"area"`
+	Location       Location  `json:"location"`
 }
