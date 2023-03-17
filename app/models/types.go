@@ -24,7 +24,7 @@ const (
 	Mandatory    BoolPref = 4
 )
 
-type Range []int64
+type Range []int
 
 type TimeArray []time.Time
 
