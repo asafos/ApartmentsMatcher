@@ -12,6 +12,7 @@ func RegisterAPI(api fiber.Router, db *database.Database) {
 	registerUsers(api, db)
 	registerApartments(api, db)
 	registerApartmentPrefs(api, db)
+	registerMatching(api, db)
 }
 
 func registerRoles(api fiber.Router, db *database.Database) {
