@@ -2,7 +2,12 @@ package serviceApi
 
 import (
 	"fiber-boilerplate/app/models"
+	"time"
 )
+
+func isDateBetween(date, start, end time.Time) bool {
+	return date.After(start) && date.Before(end)
+}
 
 func IsApartmentMatchesPref(a *models.Apartment, ap *models.ApartmentPref) bool {
 	if a.Price < ap.Price[0] || a.Price > ap.Price[1] {
@@ -18,30 +23,23 @@ func IsApartmentMatchesPref(a *models.Apartment, ap *models.ApartmentPref) bool 
 	if !isLocationCompatible {
 		return false
 	}
-	isAvailableDateCompatible := false
-	for _, l := range ap.AvailableDate {
-		if l == a.AvailableDate {
-			isLocationCompatible = true
-		}
+	if !isDateBetween(a.AvailableDate, ap.AvailableDate[0], ap.AvailableDate[1]) {
+		return false
 	}
 
-	return isAvailableDateCompatible
-
-	// if !isAvailableDateCompatible {
-	// 	return false
-	// }
-
-	// return true
+	return true
 }
 
-func GetMatchingApartments(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *[]models.Apartment {
-	var MatchingApartments []models.Apartment
+func GetMatchingApartments(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *map[uint][]models.Apartment {
+	MatchingApartmentsPerPref := make(map[uint][]models.Apartment)
 	for _, ap := range apartmentPrefs {
+		var MatchingApartments []models.Apartment
 		for _, a := range apartments {
 			if IsApartmentMatchesPref(&a, &ap) {
 				MatchingApartments = append(MatchingApartments, a)
 			}
 		}
+		MatchingApartmentsPerPref[ap.ID] = MatchingApartments
 	}
-	return &MatchingApartments
+	return &MatchingApartmentsPerPref
 }
