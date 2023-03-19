@@ -10,6 +10,6 @@ type User struct {
 	Email          string
 	RoleID         uint               `gorm:"column:role_id" json:"role_id"`
 	Role           Role               `gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Apartments     ApartmentArray     `gorm:"type:text"`
-	ApartmentPrefs ApartmentPrefArray `gorm:"type:text"`
+	Apartments     ApartmentSlice     `gorm:"type:text"`
+	ApartmentPrefs ApartmentPrefSlice `gorm:"type:text"`
 }

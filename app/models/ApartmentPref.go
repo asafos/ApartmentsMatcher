@@ -10,12 +10,12 @@ type ApartmentPref struct {
 	UserID         uint
 	NumberOfRooms  Range         `json:"numberOfRooms" gorm:"type:text"`
 	Price          Range         `json:"price" gorm:"type:text"`
-	Balcony        BoolPref      `json:"balcony"`
-	Roof           BoolPref      `json:"roof"`
-	Parking        BoolPref      `json:"parking"`
-	Elevator       BoolPref      `json:"elevator"`
-	AnimalsAllowed BoolPref      `json:"animalsAllowed"`
-	Renovated      BoolPref      `json:"renovated"`
-	AvailableDate  TimeArray     `json:"availableDate" gorm:"type:text"`
-	Location       LocationArray `json:"location" gorm:"type:text"`
+	Balcony        bool          `json:"balcony"`
+	Roof           bool          `json:"roof"`
+	Parking        bool          `json:"parking"`
+	Elevator       bool          `json:"elevator"`
+	AnimalsAllowed bool          `json:"animalsAllowed"`
+	Renovated      bool          `json:"renovated"`
+	AvailableDate  TimeSlice     `json:"availableDate" gorm:"type:text"`
+	Location       LocationSlice `json:"location" gorm:"type:text"`
 }
