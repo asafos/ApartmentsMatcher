@@ -30,21 +30,29 @@ func OAuthLogin() fiber.Handler {
 	}
 }
 
-func OAuthLoginCallback() fiber.Handler {
+func OAuthLoginCallback(session *session.Session) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		user, err := gf.CompleteUserAuth(ctx)
 		if err != nil {
 			return err
 		}
+		store := session.Get(ctx)
+		defer store.Save()
+		// Set the user ID in the session store
+		store.Set("userid", user.UserID)
 		ctx.JSON(user)
 		return nil
 	}
 }
 
-func OAuthLogout() fiber.Handler {
+func OAuthLogout(session *session.Session) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		gf.Logout(ctx)
-		ctx.Redirect("/")
+		store := session.Get(ctx)
+		store.Delete("userid")
+		if err := store.Save(); err != nil {
+			ctx.Status(fiber.StatusInternalServerError).SendString("couldn't delete user from store" + err.Error())
+		}
 		return nil
 	}
 }

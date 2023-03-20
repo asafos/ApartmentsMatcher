@@ -97,7 +97,7 @@ func main() {
 
 	// Register web routes
 	auth := app.Group("/auth")
-	routes.RegisterAuth(auth, *config)
+	routes.RegisterAuth(auth, *config, app.Session)
 
 	// Register application API routes (using the /api/v1 group)
 	api := app.Group("/api")
