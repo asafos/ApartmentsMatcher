@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/session/v2"
+	gf "github.com/shareed2k/goth_fiber"
 	hashing "github.com/thomasvvugt/fiber-hashing"
 )
 
@@ -15,14 +16,37 @@ func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (authenticated bo
 	store := session.Get(ctx)
 	// Get User ID from session store
 	userID, correct := store.Get("userid").(int64)
-	if !correct {
-		userID = 0
+	return correct && userID > 0
+}
+
+func OAuthLogin() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		if gothUser, err := gf.CompleteUserAuth(ctx); err == nil {
+			ctx.JSON(gothUser)
+		} else {
+			gf.BeginAuthHandler(ctx)
+		}
+		return nil
 	}
-	auth := false
-	if userID > 0 {
-		auth = true
+}
+
+func OAuthLoginCallback() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		user, err := gf.CompleteUserAuth(ctx)
+		if err != nil {
+			return err
+		}
+		ctx.JSON(user)
+		return nil
 	}
-	return auth
+}
+
+func OAuthLogout() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		gf.Logout(ctx)
+		ctx.Redirect("/")
+		return nil
+	}
 }
 
 func ShowLoginForm() fiber.Handler {

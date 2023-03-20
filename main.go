@@ -95,6 +95,10 @@ func main() {
 	web := app.Group("")
 	routes.RegisterWeb(web, app.Session, config.GetString("SESSION_LOOKUP"), app.DB, app.Hasher)
 
+	// Register web routes
+	auth := app.Group("/auth")
+	routes.RegisterAuth(auth, *config)
+
 	// Register application API routes (using the /api/v1 group)
 	api := app.Group("/api")
 	apiv1 := api.Group("/v1")
