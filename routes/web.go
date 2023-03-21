@@ -27,7 +27,7 @@ func RegisterWeb(web fiber.Router, session *session.Session, sessionLookup strin
 	})
 
 	// Auth routes
-	web.Get("/login", Controller.ShowLoginForm())
-	web.Post("/login", Controller.PostLoginForm(hasher, session, db))
-	web.Post("/logout", Controller.PostLogoutForm(sessionLookup, session, db))
+	// web.Get("/login", Controller.ShowLoginForm())
+	// web.Post("/login", Controller.PostLoginForm(hasher, session, db))
+	// web.Post("/logout", Controller.PostLogoutForm(sessionLookup, session, db))
 }

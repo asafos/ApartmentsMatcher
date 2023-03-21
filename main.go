@@ -48,7 +48,7 @@ func main() {
 		Session: session.New(config.GetSessionConfig()),
 	}
 
-	app.registerMiddlewares(config)
+	app.registerMiddlewares(config, app.Session)
 
 	// Initialize database
 	db, err := database.New(&database.DatabaseConfig{
@@ -92,12 +92,12 @@ func main() {
 	}
 
 	// Register web routes
-	web := app.Group("")
-	routes.RegisterWeb(web, app.Session, config.GetString("SESSION_LOOKUP"), app.DB, app.Hasher)
+	// web := app.Group("")
+	// routes.RegisterWeb(web, app.Session, config.GetString("SESSION_LOOKUP"), app.DB, app.Hasher)
 
 	// Register web routes
 	auth := app.Group("/auth")
-	routes.RegisterAuth(auth, *config, app.Session)
+	routes.RegisterAuth(auth, *config, app.Session, app.DB, config.GetString("SESSION_LOOKUP"))
 
 	// Register application API routes (using the /api/v1 group)
 	api := app.Group("/api")
@@ -133,7 +133,9 @@ func main() {
 	}
 }
 
-func (app *App) registerMiddlewares(config *configuration.Config) {
+func (app *App) registerMiddlewares(config *configuration.Config, session *session.Session) {
+	app.Use("/api", middleware.Auth(session))
+
 	// Middleware - Custom Access Logger based on zap
 	if config.GetBool("MW_ACCESS_LOGGER_ENABLED") {
 		app.Use(middleware.AccessLogger(&middleware.AccessLoggerConfig{

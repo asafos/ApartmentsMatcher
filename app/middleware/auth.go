@@ -1,31 +1,21 @@
 package middleware
 
 import (
-	"strings"
+	Controller "fiber-boilerplate/app/controllers/web"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/utils"
+	"github.com/gofiber/session/v2"
+
 	gf "github.com/shareed2k/goth_fiber"
 )
 
 // auth requires user login via oauth
-func auth() fiber.Handler {
+func Auth(session *session.Session) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		gf.GetState(ctx)
-		ctx.SendStatus(fiber.StatusUnauthorized)
-		hostname := utils.ImmutableString(ctx.Hostname())
-		hostnameSplit := strings.Split(hostname, ".")
-
-		if hostnameSplit[0] == "www" && len(hostnameSplit) > 1 {
-			newHostname := ""
-			for i := 1; i <= (len(hostnameSplit) - 1); i++ {
-				if i != (len(hostnameSplit) - 1) {
-					newHostname = newHostname + hostnameSplit[i] + "."
-				} else {
-					newHostname = newHostname + hostnameSplit[i]
-				}
-			}
-			return ctx.Redirect(ctx.Protocol()+"://"+newHostname+ctx.OriginalURL(), 301)
+		if !Controller.IsAuthenticated(session, ctx) {
+			ctx.SendStatus(fiber.StatusUnauthorized)
+			return nil
 		}
 		return ctx.Next()
 	}
