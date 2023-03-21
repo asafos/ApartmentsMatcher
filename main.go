@@ -48,8 +48,6 @@ func main() {
 		Session: session.New(config.GetSessionConfig()),
 	}
 
-	app.registerMiddlewares(config, app.Session)
-
 	// Initialize database
 	db, err := database.New(&database.DatabaseConfig{
 		Driver:   config.GetString("DB_DRIVER"),
@@ -90,6 +88,8 @@ func main() {
 			}
 		}
 	}
+
+	app.registerMiddlewares(config, app.Session, app.DB)
 
 	// Register web routes
 	// web := app.Group("")
@@ -133,8 +133,10 @@ func main() {
 	}
 }
 
-func (app *App) registerMiddlewares(config *configuration.Config, session *session.Session) {
+func (app *App) registerMiddlewares(config *configuration.Config, session *session.Session, db *database.Database) {
 	app.Use("/api", middleware.Auth(session))
+	app.Use("/api/*/users", middleware.AdminRole(session, db))
+	app.Use("/api/*/roles", middleware.AdminRole(session, db))
 
 	// Middleware - Custom Access Logger based on zap
 	if config.GetBool("MW_ACCESS_LOGGER_ENABLED") {

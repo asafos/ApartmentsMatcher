@@ -5,6 +5,7 @@ import (
 	"fiber-boilerplate/app/models"
 	services "fiber-boilerplate/app/services/api"
 	"fiber-boilerplate/database"
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,8 +16,23 @@ import (
 func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (authenticated bool) {
 	store := session.Get(ctx)
 	// Get User ID from session store
-	userID, correct := store.Get("userid").(int64)
-	return correct && userID > 0
+	userID := store.Get("userid")
+	return userID != nil
+}
+
+func IsAdmin(session *session.Session, ctx *fiber.Ctx, db *database.Database) (authenticated bool) {
+	store := session.Get(ctx)
+	// Get User ID from session store
+	userID := store.Get("userid")
+	if userID == nil {
+		return false
+	}
+	userIDStr := fmt.Sprintf("%v", userID)
+	user, err := FindUserByOAuthID(db, userIDStr)
+	if err != nil || user == nil {
+		return false
+	}
+	return user.RoleID == 1
 }
 
 func OAuthLogin() fiber.Handler {
