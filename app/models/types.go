@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+type RoleEnum uint
+
+const (
+	UserRole  RoleEnum = 1
+	AdminRole RoleEnum = 1
+)
+
 type Location string
 
 const (

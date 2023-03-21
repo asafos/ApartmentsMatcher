@@ -32,7 +32,7 @@ func IsAdmin(session *session.Session, ctx *fiber.Ctx, db *database.Database) (a
 	if err != nil || user == nil {
 		return false
 	}
-	return user.RoleID == 1
+	return models.RoleEnum(user.RoleID) == models.AdminRole
 }
 
 func OAuthLogin() fiber.Handler {
@@ -66,7 +66,7 @@ func OAuthLoginCallback(session *session.Session, db *database.Database) fiber.H
 		User.Email = oAuthUser.Email
 		User.Name = oAuthUser.Name
 		User.OAuthID = oAuthUser.UserID
-		User.RoleID = 2
+		User.RoleID = uint(models.UserRole)
 		if response := services.AddUser(db, User); response.Error != nil {
 			return utils.SendError(ctx, "an error occurred when storing the new user"+response.Error.Error(), fiber.StatusInternalServerError)
 		}
