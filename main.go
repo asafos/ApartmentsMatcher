@@ -11,7 +11,7 @@ import (
 	"os"
 	"os/signal"
 
-	hashing "github.com/thomasvvugt/fiber-hashing"
+	// hashing "github.com/thomasvvugt/fiber-hashing"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -34,8 +34,8 @@ import (
 type App struct {
 	*fiber.App
 
-	DB      *database.Database
-	Hasher  hashing.Driver
+	DB *database.Database
+	// Hasher  hashing.Driver
 	Session *session.Session
 }
 
@@ -43,8 +43,8 @@ func main() {
 	config := configuration.New()
 
 	app := App{
-		App:     fiber.New(*config.GetFiberConfig()),
-		Hasher:  hashing.New(config.GetHasherConfig()),
+		App: fiber.New(*config.GetFiberConfig()),
+		// Hasher:  hashing.New(config.GetHasherConfig()),
 		Session: session.New(config.GetSessionConfig()),
 	}
 
