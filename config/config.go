@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -16,14 +15,6 @@ import (
 	"github.com/jameskeane/bcrypt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/ace"
-	"github.com/gofiber/template/amber"
-	"github.com/gofiber/template/django"
-	"github.com/gofiber/template/handlebars"
-	"github.com/gofiber/template/html"
-	"github.com/gofiber/template/jet"
-	"github.com/gofiber/template/mustache"
-	"github.com/gofiber/template/pug"
 
 	fsession "github.com/fasthttp/session/v2"
 	"github.com/gofiber/session/v2"
@@ -61,7 +52,7 @@ var defaultErrorHandler = func(c *fiber.Ctx, err error) error {
 	c.Status(code)
 
 	// Render default error view
-	err = c.Render("errors/"+strconv.Itoa(code), fiber.Map{"message": message})
+	// err = c.Render("errors/"+strconv.Itoa(code), fiber.Map{"message": message})
 	if err != nil {
 		return c.SendString(message)
 	}
@@ -165,13 +156,13 @@ func (config *Config) setDefaults() {
 	config.SetDefault("FIBER_ETAG", false)
 	config.SetDefault("FIBER_BODYLIMIT", 4194304)
 	config.SetDefault("FIBER_CONCURRENCY", 262144)
-	config.SetDefault("FIBER_VIEWS", "html")
-	config.SetDefault("FIBER_VIEWS_DIRECTORY", "resources/views")
-	config.SetDefault("FIBER_VIEWS_RELOAD", false)
-	config.SetDefault("FIBER_VIEWS_DEBUG", false)
-	config.SetDefault("FIBER_VIEWS_LAYOUT", "embed")
-	config.SetDefault("FIBER_VIEWS_DELIMS_L", "{{")
-	config.SetDefault("FIBER_VIEWS_DELIMS_R", "}}")
+	// config.SetDefault("FIBER_VIEWS", "html")
+	// config.SetDefault("FIBER_VIEWS_DIRECTORY", "resources/views")
+	// config.SetDefault("FIBER_VIEWS_RELOAD", false)
+	// config.SetDefault("FIBER_VIEWS_DEBUG", false)
+	// config.SetDefault("FIBER_VIEWS_LAYOUT", "embed")
+	// config.SetDefault("FIBER_VIEWS_DELIMS_L", "{{")
+	// config.SetDefault("FIBER_VIEWS_DELIMS_R", "}}")
 	config.SetDefault("FIBER_READTIMEOUT", 0)
 	config.SetDefault("FIBER_WRITETIMEOUT", 0)
 	config.SetDefault("FIBER_IDLETIMEOUT", 0)
@@ -270,121 +261,121 @@ func (config *Config) setDefaults() {
 	config.SetDefault("MW_FIBER_REQUESTID_CONTEXTKEY", "requestid")
 }
 
-func (config *Config) getFiberViewsEngine() fiber.Views {
-	var viewsEngine fiber.Views
-	switch strings.ToLower(config.GetString("FIBER_VIEWS")) {
-	case "ace":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".ace")
-		}
-		engine := ace.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	case "amber":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".amber")
-		}
-		engine := amber.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	case "django":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".django")
-		}
-		engine := django.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT"))
-		viewsEngine = engine
-		break
-	case "handlebars":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".hbs")
-		}
-		engine := handlebars.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	case "jet":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".jet")
-		}
-		engine := jet.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	case "mustache":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".mustache")
-		}
-		engine := mustache.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	case "pug":
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".pug")
-		}
-		engine := pug.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	// Use the official html/template package by default
-	default:
-		// Set file extension dynamically to FIBER_VIEWS
-		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
-			config.Set("FIBER_VIEWS_EXTENSION", ".html")
-		}
-		engine := html.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
-		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
-			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
-			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
-			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
-		viewsEngine = engine
-		break
-	}
-	return viewsEngine
-}
+// func (config *Config) getFiberViewsEngine() fiber.Views {
+// 	var viewsEngine fiber.Views
+// 	switch strings.ToLower(config.GetString("FIBER_VIEWS")) {
+// 	case "ace":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".ace")
+// 		}
+// 		engine := ace.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	case "amber":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".amber")
+// 		}
+// 		engine := amber.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	case "django":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".django")
+// 		}
+// 		engine := django.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT"))
+// 		viewsEngine = engine
+// 		break
+// 	case "handlebars":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".hbs")
+// 		}
+// 		engine := handlebars.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	case "jet":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".jet")
+// 		}
+// 		engine := jet.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	case "mustache":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".mustache")
+// 		}
+// 		engine := mustache.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	case "pug":
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".pug")
+// 		}
+// 		engine := pug.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	// Use the official html/template package by default
+// 	default:
+// 		// Set file extension dynamically to FIBER_VIEWS
+// 		if config.GetString("FIBER_VIEWS_EXTENSION") == "" {
+// 			config.Set("FIBER_VIEWS_EXTENSION", ".html")
+// 		}
+// 		engine := html.New(config.GetString("FIBER_VIEWS_DIRECTORY"), config.GetString("FIBER_VIEWS_EXTENSION"))
+// 		engine.Reload(config.GetBool("FIBER_VIEWS_RELOAD")).
+// 			Debug(config.GetBool("FIBER_VIEWS_DEBUG")).
+// 			Layout(config.GetString("FIBER_VIEWS_LAYOUT")).
+// 			Delims(config.GetString("FIBER_VIEWS_DELIMS_L"), config.GetString("FIBER_VIEWS_DELIMS_R"))
+// 		viewsEngine = engine
+// 		break
+// 	}
+// 	return viewsEngine
+// }
 
 func (config *Config) setFiberConfig() {
 	config.fiber = &fiber.Config{
-		Prefork:                   config.GetBool("FIBER_PREFORK"),
-		ServerHeader:              config.GetString("FIBER_SERVERHEADER"),
-		StrictRouting:             config.GetBool("FIBER_STRICTROUTING"),
-		CaseSensitive:             config.GetBool("FIBER_CASESENSITIVE"),
-		Immutable:                 config.GetBool("FIBER_IMMUTABLE"),
-		UnescapePath:              config.GetBool("FIBER_UNESCAPEPATH"),
-		ETag:                      config.GetBool("FIBER_ETAG"),
-		BodyLimit:                 config.GetInt("FIBER_BODYLIMIT"),
-		Concurrency:               config.GetInt("FIBER_CONCURRENCY"),
-		Views:                     config.getFiberViewsEngine(),
+		Prefork:       config.GetBool("FIBER_PREFORK"),
+		ServerHeader:  config.GetString("FIBER_SERVERHEADER"),
+		StrictRouting: config.GetBool("FIBER_STRICTROUTING"),
+		CaseSensitive: config.GetBool("FIBER_CASESENSITIVE"),
+		Immutable:     config.GetBool("FIBER_IMMUTABLE"),
+		UnescapePath:  config.GetBool("FIBER_UNESCAPEPATH"),
+		ETag:          config.GetBool("FIBER_ETAG"),
+		BodyLimit:     config.GetInt("FIBER_BODYLIMIT"),
+		Concurrency:   config.GetInt("FIBER_CONCURRENCY"),
+		// Views:                     config.getFiberViewsEngine(),
 		ReadTimeout:               config.GetDuration("FIBER_READTIMEOUT"),
 		WriteTimeout:              config.GetDuration("FIBER_WRITETIMEOUT"),
 		IdleTimeout:               config.GetDuration("FIBER_IDLETIMEOUT"),
