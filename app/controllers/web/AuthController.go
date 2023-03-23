@@ -18,13 +18,17 @@ func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (authenticated bo
 	return ok
 }
 
-func IsAuthenticatedHandler(session *session.Session) fiber.Handler {
+func IsAuthenticatedHandler(session *session.Session, db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		isAuthenticated := IsAuthenticated(session, ctx)
-		if !isAuthenticated {
+		userID, ok := utils.GetUserIDFromSession(session, ctx)
+		if !ok {
 			return utils.SendError(ctx, "user not logged in", fiber.StatusUnauthorized)
 		}
-		return ctx.SendStatus(fiber.StatusOK)
+		User := new(models.User)
+		if response := services.GetUser(db, User, string(userID)); response.Error != nil {
+			return utils.SendError(ctx, "An error occurred when retrieving the user: "+response.Error.Error(), fiber.StatusInternalServerError)
+		}
+		return ctx.JSON(User)
 	}
 }
 

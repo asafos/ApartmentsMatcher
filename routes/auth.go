@@ -26,5 +26,5 @@ func RegisterAuth(api fiber.Router, config configuration.Config, session *sessio
 
 	api.Get("/:provider", Controller.OAuthLogin())
 
-	api.Get("/isAuthenticated", Controller.IsAuthenticatedHandler(session))
+	api.Get("/isAuthenticated", Controller.IsAuthenticatedHandler(session, db))
 }
