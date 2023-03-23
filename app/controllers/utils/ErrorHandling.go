@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SendError(ctx *fiber.Ctx, errStr string, statusCode int16) error {
-	ctx.Status(fiber.StatusInternalServerError).SendString(errStr)
+func SendError(ctx *fiber.Ctx, errStr string, statusCode int) error {
+	ctx.Status(statusCode).SendString(errStr)
 	return fmt.Errorf(errStr)
 }
