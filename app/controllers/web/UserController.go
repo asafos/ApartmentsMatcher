@@ -51,7 +51,7 @@ func FindUserByOAuthID(db *database.Database, oAuthID string) (*models.User, err
 }
 
 // Return a single user as JSON
-func FindUserByID(db *database.Database, id int64) (*models.User, error) {
+func FindUserByID(db *database.Database, id uint) (*models.User, error) {
 	User := new(models.User)
 	if response := db.Where("id = ?", id).First(&User); response.Error != nil {
 		return nil, response.Error

@@ -5,7 +5,6 @@ import (
 	"fiber-boilerplate/app/models"
 	services "fiber-boilerplate/app/services/api"
 	"fiber-boilerplate/database"
-	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,21 +13,17 @@ import (
 )
 
 func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (authenticated bool) {
-	store := session.Get(ctx)
-	// Get User ID from session store
-	userID := store.Get("userid")
-	return userID != nil
+	_, ok := utils.GetUserIDFromSession(session, ctx)
+
+	return ok
 }
 
 func IsAdmin(session *session.Session, ctx *fiber.Ctx, db *database.Database) (authenticated bool) {
-	store := session.Get(ctx)
-	// Get User ID from session store
-	userID := store.Get("userid")
-	if userID == nil {
+	userID, ok := utils.GetUserIDFromSession(session, ctx)
+	if !ok {
 		return false
 	}
-	userIDStr := fmt.Sprintf("%v", userID)
-	user, err := FindUserByOAuthID(db, userIDStr)
+	user, err := FindUserByID(db, userID)
 	if err != nil || user == nil {
 		return false
 	}
@@ -52,16 +47,13 @@ func OAuthLoginCallback(session *session.Session, db *database.Database) fiber.H
 		if err != nil {
 			return err
 		}
-		store := session.Get(ctx)
-		defer store.Save()
-		// Set the user ID in the session store
-		store.Set("userid", oAuthUser.UserID)
 
 		user, err := FindUserByOAuthID(db, oAuthUser.UserID)
 		if err == nil && user != nil {
 			ctx.JSON(user)
 			return nil
 		}
+
 		User := new(models.User)
 		User.Email = oAuthUser.Email
 		User.Name = oAuthUser.Name
@@ -70,6 +62,11 @@ func OAuthLoginCallback(session *session.Session, db *database.Database) fiber.H
 		if response := services.AddUser(db, User); response.Error != nil {
 			return utils.SendError(ctx, "an error occurred when storing the new user"+response.Error.Error(), fiber.StatusInternalServerError)
 		}
+
+		store := session.Get(ctx)
+		defer store.Save()
+		store.Set("userid", User.ID)
+
 		ctx.JSON(User)
 		return nil
 	}
