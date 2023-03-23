@@ -12,21 +12,19 @@ import (
 	gf "github.com/shareed2k/goth_fiber"
 )
 
-func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (authenticated bool) {
-	_, ok := utils.GetUserIDFromSession(session, ctx)
-
-	return ok
+func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (userID uint, authenticated bool) {
+	return utils.GetUserIDFromSession(session, ctx)
 }
 
 func IsAuthenticatedHandler(session *session.Session, db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		userID, ok := utils.GetUserIDFromSession(session, ctx)
 		if !ok {
-			return utils.SendError(ctx, "user not logged in", fiber.StatusUnauthorized)
+			return fiber.NewError(fiber.StatusUnauthorized, "user not logged in")
 		}
 		User := new(models.User)
 		if response := services.GetUser(db, User, string(userID)); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when retrieving the user: "+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the user: "+response.Error.Error())
 		}
 		return ctx.JSON(User)
 	}
@@ -74,7 +72,7 @@ func OAuthLoginCallback(session *session.Session, db *database.Database) fiber.H
 		User.OAuthID = oAuthUser.UserID
 		User.RoleID = uint(models.UserRole)
 		if response := services.AddUser(db, User); response.Error != nil {
-			return utils.SendError(ctx, "an error occurred when storing the new user"+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "an error occurred when storing the new user"+response.Error.Error())
 		}
 
 		store := session.Get(ctx)
@@ -93,6 +91,7 @@ func OAuthLogout(session *session.Session, sessionLookup string) fiber.Handler {
 		store.Delete("userid")
 		if err := store.Save(); err != nil {
 			ctx.Status(fiber.StatusInternalServerError).SendString("couldn't delete user from store" + err.Error())
+			return fiber.NewError(fiber.StatusInternalServerError, "couldn't delete user from store"+err.Error())
 		}
 		// Check if cookie needs to be unset
 		split := strings.Split(sessionLookup, ":")
@@ -100,7 +99,7 @@ func OAuthLogout(session *session.Session, sessionLookup string) fiber.Handler {
 			// Unset cookie on client-side
 			ctx.Set("Set-Cookie", split[1]+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; HttpOnly")
 			if err := ctx.SendString("You are now logged out."); err != nil {
-				return utils.SendError(ctx, err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 			}
 			return nil
 		}

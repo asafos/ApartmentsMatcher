@@ -112,9 +112,9 @@ func main() {
 		if err := c.SendStatus(fiber.StatusNotFound); err != nil {
 			panic(err)
 		}
-		if err := c.Render("errors/404", fiber.Map{}); err != nil {
-			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-		}
+		// if err := c.Render("errors/404", fiber.Map{}); err != nil {
+		// 	return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		// }
 		return err
 	})
 
