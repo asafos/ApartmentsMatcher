@@ -1,5 +1,5 @@
-import { Home } from "./pages/Home";
-import { Login } from "./pages/Login";
+import { Home } from "./pages/Home/Home";
+import { LoginContainer } from "./pages/Login/Login.container";
 
 const mainRoutes = [
     {
@@ -8,7 +8,7 @@ const mainRoutes = [
     },
     {
         path: "/login",
-        element: <Login />,
+        element: <LoginContainer />,
     },
 ];
 
