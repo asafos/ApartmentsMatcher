@@ -1,7 +1,6 @@
 package routes
 
 import (
-	Controller "fiber-boilerplate/app/controllers/web"
 	"fiber-boilerplate/database"
 	"log"
 
@@ -12,7 +11,7 @@ import (
 
 func RegisterWeb(web fiber.Router, session *session.Session, sessionLookup string, db *database.Database, hasher hashing.Driver) {
 	// Homepage
-	web.Get("/", Controller.Index(session, db))
+	// web.Get("/", Controller.Index(session, db))
 
 	// Make a new hash
 	web.Get("/hash/*", func(ctx *fiber.Ctx) error {
