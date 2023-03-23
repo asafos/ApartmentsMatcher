@@ -25,4 +25,6 @@ func RegisterAuth(api fiber.Router, config configuration.Config, session *sessio
 	api.Get("/logout/:provider", Controller.OAuthLogout(session, sessionLookup))
 
 	api.Get("/:provider", Controller.OAuthLogin())
+
+	api.Get("/isAuthenticated", Controller.IsAuthenticatedHandler(session))
 }

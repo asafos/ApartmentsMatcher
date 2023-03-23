@@ -18,6 +18,16 @@ func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (authenticated bo
 	return ok
 }
 
+func IsAuthenticatedHandler(session *session.Session) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		isAuthenticated := IsAuthenticated(session, ctx)
+		if !isAuthenticated {
+			return utils.SendError(ctx, "user not logged in", fiber.StatusUnauthorized)
+		}
+		return ctx.SendStatus(fiber.StatusOK)
+	}
+}
+
 func IsAdmin(session *session.Session, ctx *fiber.Ctx, db *database.Database) (authenticated bool) {
 	userID, ok := utils.GetUserIDFromSession(session, ctx)
 	if !ok {
