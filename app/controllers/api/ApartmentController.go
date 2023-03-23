@@ -7,7 +7,6 @@ import (
 	"fiber-boilerplate/database"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/session/v2"
 )
 
 // Return all apartments as JSON
@@ -26,7 +25,7 @@ func GetAllApartments(db *database.Database) fiber.Handler {
 }
 
 // Return a single apartment as JSON
-func GetApartment(db *database.Database, session *session.Session) fiber.Handler {
+func GetApartment(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		Apartment := new(models.Apartment)
 		id := ctx.Params("id")
@@ -46,7 +45,7 @@ func GetApartment(db *database.Database, session *session.Session) fiber.Handler
 			}
 			return err
 		}
-		userID, _ := utils.GetUserIDFromSession(session, ctx)
+		userID := ctx.Locals("userID")
 		if userID != Apartment.UserID {
 			return utils.SendError(ctx, "User is not associated to this apartment", fiber.StatusUnauthorized)
 		}

@@ -13,10 +13,13 @@ import (
 func Auth(session *session.Session) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		gf.GetState(ctx)
-		if !Controller.IsAuthenticated(session, ctx) {
+
+		userID, ok := Controller.IsAuthenticated(session, ctx)
+		if !ok {
 			ctx.SendStatus(fiber.StatusUnauthorized)
 			return nil
 		}
+		ctx.Locals("userID", userID)
 		return ctx.Next()
 	}
 }
