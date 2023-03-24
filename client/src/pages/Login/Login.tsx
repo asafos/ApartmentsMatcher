@@ -6,6 +6,7 @@ import {
     Box,
     Avatar
 } from "@chakra-ui/react";
+import { useGoogleLogin } from "@react-oauth/google";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
 
 const CFaFacebook = chakra(FaFacebook);
@@ -13,11 +14,16 @@ const CFaGoogle = chakra(FaGoogle);
 
 type Props = {
     onFacebookClick: () => void
-    onGoogleClick: () => void
+    onGoogleLogin: (authCode: string) => void
 }
 
 const Login = (props: Props) => {
-    const { onFacebookClick, onGoogleClick} = props;
+    const { onFacebookClick, onGoogleLogin} = props;
+    const login = useGoogleLogin({
+        onSuccess: authCode => onGoogleLogin(authCode.code),
+        flow: "auth-code"
+    });
+    
     return (
         <Stack
             flexDir="column"
@@ -53,7 +59,7 @@ const Login = (props: Props) => {
                         colorScheme="red"
                         width="full"
                         leftIcon={<CFaGoogle />}
-                        onClick={onGoogleClick}
+                        onClick={() => login()}
                     >
                         Login with google
                     </Button>

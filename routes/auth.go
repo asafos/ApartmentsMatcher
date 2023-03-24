@@ -22,9 +22,11 @@ func RegisterAuth(api fiber.Router, config configuration.Config, session *sessio
 
 	api.Get("/user", Controller.IsAuthenticatedHandler(session, db))
 
-	api.Get("/:provider/callback", Controller.OAuthLoginCallback(session, db))
+	// api.Get("/:provider/callback", Controller.OAuthLoginCallback(session, db))
 
-	api.Get("/logout/:provider", Controller.OAuthLogout(session, sessionLookup))
+	// api.Get("/logout/:provider", Controller.OAuthLogout(session, sessionLookup))
 
-	api.Get("/:provider", Controller.OAuthLogin())
+	// api.Get("/:provider", Controller.OAuthLogin())
+
+	api.Post("/google", Controller.AuthorizeGoogle(config, session, db))
 }
