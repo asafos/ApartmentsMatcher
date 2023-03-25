@@ -6,7 +6,16 @@ import { DataObjectState } from "./DAL/stores/types";
 import { mainRoutes } from "./routes";
 
 function Main() {
-   const routeResult = useRoutes(mainRoutes);
+  const fetchUser = useAuthStore((state) => state.fetchUser)
+  const user = useAuthStore((state) => state.user)
+
+  useEffect(() => {
+    if (user.state === DataObjectState.NotStarted) {
+      fetchUser()
+    }
+  }, [user.state])
+
+  const routeResult = useRoutes(mainRoutes);
   return (
     <Flex
       flexDirection="column"
