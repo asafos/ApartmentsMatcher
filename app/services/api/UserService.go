@@ -8,11 +8,11 @@ import (
 )
 
 func GetAllUsers(db *database.Database, dest *[]models.User) *gorm.DB {
-	return db.Preload("ApartmentPrefs").Preload("Apartments").Find(&dest)
+	return db.Find(&dest)
 }
 
 func GetUser(db *database.Database, dest *models.User, id string) *gorm.DB {
-	return db.Preload("ApartmentPrefs").Preload("Apartments").Find(&dest, id)
+	return db.Find(&dest, id)
 }
 
 func AddUser(db *database.Database, dest *models.User) *gorm.DB {

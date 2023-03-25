@@ -8,7 +8,7 @@ import (
 )
 
 func GetAllRoles(db *database.Database, dest *[]models.Role) *gorm.DB {
-	return db.Preload("ApartmentPrefs").Preload("Apartments").Find(&dest)
+	return db.Find(&dest)
 }
 
 func GetRole(db *database.Database, dest *models.Role, id interface{}) *gorm.DB {
