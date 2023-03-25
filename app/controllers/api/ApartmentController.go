@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fiber-boilerplate/app/constants"
 	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/app/models"
 	services "fiber-boilerplate/app/services/api"
@@ -45,7 +46,7 @@ func GetApartment(db *database.Database) fiber.Handler {
 			}
 			return err
 		}
-		userID := ctx.Locals("userID")
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		if userID != Apartment.UserID {
 			return utils.SendError(ctx, "User is not associated to this apartment", fiber.StatusUnauthorized)
 		}

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fiber-boilerplate/app/constants"
 	Controller "fiber-boilerplate/app/controllers/web"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,7 +20,7 @@ func Auth(session *session.Session) fiber.Handler {
 			ctx.SendStatus(fiber.StatusUnauthorized)
 			return nil
 		}
-		ctx.Locals("userID", userID)
+		ctx.Locals(constants.USER_LOCALS_KEY, userID)
 		return ctx.Next()
 	}
 }

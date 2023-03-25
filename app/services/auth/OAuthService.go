@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fiber-boilerplate/app/constants"
 	"fiber-boilerplate/app/models"
 	apiServices "fiber-boilerplate/app/services/api"
 	configuration "fiber-boilerplate/config"
@@ -206,7 +207,7 @@ func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Databas
 
 	store := session.Get(ctx)
 	defer store.Save()
-	store.Set("userid", User.ID)
+	store.Set(constants.USER_ID_SESSION_KEY, User.ID)
 
 	return User, nil
 }
