@@ -6,17 +6,9 @@ const LoginContainer = () => {
     const facebookLogin = useAuthStore(({ facebookLogin }) => facebookLogin)
     const googleLogin = useAuthStore(({ googleLogin }) => googleLogin)
     
-
-    const handleFacebookLogin = () => {
-        // facebookLogin()
-    }
-    const handleGoogleLogin = (authCode: string) => {
-        googleLogin(authCode)
-    }
-    
     return (
         <GoogleOAuthProvider clientId="79402643972-cdochoam7jcng81nvmumircp12jb5skp.apps.googleusercontent.com" >
-            <Login onFacebookClick={handleFacebookLogin} onGoogleLogin={handleGoogleLogin} />
+            <Login onFacebookClick={facebookLogin} onGoogleLogin={googleLogin} />
         </GoogleOAuthProvider>
     )
 }

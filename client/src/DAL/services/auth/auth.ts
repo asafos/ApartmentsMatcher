@@ -4,13 +4,16 @@ type User = {
     id: number
 }
 
-const facebookLogin = () => {
-    return AMSHttpClient.get<User>('/auth/facebook')
+const facebookLogin = (authCode: string) => {
+    const bodyFormData = new FormData();
+    bodyFormData.append('code', authCode);
+
+    return AMSHttpClient.post<User>('/auth/facebook', bodyFormData)
 }
 
-const googleLogin = (code: string) => {
+const googleLogin = (authCode: string) => {
     const bodyFormData = new FormData();
-    bodyFormData.append('code', code);
+    bodyFormData.append('code', authCode);
 
     return AMSHttpClient.post<User>('/auth/google', bodyFormData)
 }

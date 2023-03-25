@@ -8,22 +8,23 @@ import {
 } from "@chakra-ui/react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import FacebookLogin from '@greatsumini/react-facebook-login';
 
 const CFaFacebook = chakra(FaFacebook);
 const CFaGoogle = chakra(FaGoogle);
 
 type Props = {
-    onFacebookClick: () => void
     onGoogleLogin: (authCode: string) => void
+    onFacebookClick: (authCode: string) => void
 }
 
 const Login = (props: Props) => {
-    const { onFacebookClick, onGoogleLogin} = props;
+    const { onFacebookClick, onGoogleLogin } = props;
     const login = useGoogleLogin({
         onSuccess: authCode => onGoogleLogin(authCode.code),
         flow: "auth-code"
     });
-    
+
     return (
         <Stack
             flexDir="column"
@@ -41,17 +42,26 @@ const Login = (props: Props) => {
                     backgroundColor="whiteAlpha.900"
                     boxShadow="md"
                 >
-                    <Button
-                        borderRadius={0}
-                        type="submit"
-                        variant="solid"
-                        colorScheme="blue"
-                        width="full"
-                        leftIcon={<CFaFacebook />}
-                        onClick={onFacebookClick}
-                    >
-                        Login with Facebook
-                    </Button>
+                    <FacebookLogin
+                        appId="1156511058373400"
+                        onSuccess={(response) => {
+                            onFacebookClick(response.signedRequest)
+                        }}
+                        scope="email"
+                        render={({ onClick, logout }) => (
+                            <Button
+                                borderRadius={0}
+                                type="submit"
+                                variant="solid"
+                                colorScheme="blue"
+                                width="full"
+                                leftIcon={<CFaFacebook />}
+                                onClick={onClick}
+                            >
+                                Login with Facebook
+                            </Button>
+                        )}
+                    />
                     <Button
                         borderRadius={0}
                         type="submit"

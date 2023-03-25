@@ -9,14 +9,14 @@ export type User = {
 interface State {
     user: DataObject<null | User>
     fetchUser: () => void
-    facebookLogin: () => void
+    facebookLogin: (authCode: string) => void
     googleLogin: (authCode: string) => void
 }
 
 const useAuthStore = create<State>((set) => ({
     user: { data: null, state: DataObjectState.NotStarted },
-    facebookLogin: async () => {
-        facebookLogin()
+    facebookLogin: async (authCode: string) => {
+        facebookLogin(authCode)
     },
     googleLogin: async (authCode) => {
         googleLogin(authCode)

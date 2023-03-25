@@ -29,4 +29,6 @@ func RegisterAuth(api fiber.Router, config configuration.Config, session *sessio
 	// api.Get("/:provider", Controller.OAuthLogin())
 
 	api.Post("/google", Controller.AuthorizeGoogle(config, session, db))
+
+	api.Post("/facebook", Controller.AuthorizeFacebook(config, session, db))
 }
