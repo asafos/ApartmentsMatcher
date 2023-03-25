@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	Controller "fiber-boilerplate/app/controllers/web"
+	authServices "fiber-boilerplate/app/services/auth"
 	"fiber-boilerplate/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,10 +11,10 @@ import (
 )
 
 // admin routes requires user login via oauth and admin role
-func AdminRole(session *session.Session, db *database.Database) fiber.Handler {
+func AdminRole(session *session.Session, db *database.Database, jwtSecret string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		gf.GetState(ctx)
-		if !Controller.IsAdmin(session, ctx, db) {
+		if !authServices.IsAdmin(session, ctx, db, jwtSecret) {
 			ctx.SendStatus(fiber.StatusUnauthorized)
 			return nil
 		}

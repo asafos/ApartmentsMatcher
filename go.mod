@@ -5,6 +5,7 @@ go 1.15
 require (
 	cloud.google.com/go v0.110.0 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20200420065805-90c52fcb498a
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fasthttp/session/v2 v2.2.4
 	github.com/gofiber/fiber/v2 v2.38.1
 	github.com/gofiber/session/v2 v2.0.2

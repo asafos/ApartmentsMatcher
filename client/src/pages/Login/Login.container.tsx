@@ -8,9 +8,16 @@ import { DataObjectState } from "../../DAL/stores/types";
 const LoginContainer = () => {
     const facebookLogin = useAuthStore(({ facebookLogin }) => facebookLogin)
     const googleLogin = useAuthStore(({ googleLogin }) => googleLogin)
+    const fetchUser = useAuthStore((state) => state.fetchUser)
     const user = useAuthStore(({ user }) => user)
     const navigate = useNavigate();
     const location = useLocation();
+  
+    useEffect(() => {
+      if (user.state === DataObjectState.NotStarted) {
+        fetchUser()
+      }
+    }, [])
 
     useEffect(() => {
         if (user.data) {

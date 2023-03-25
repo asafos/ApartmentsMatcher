@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
+
 	"github.com/gofiber/session/v2"
 
 	"github.com/gofiber/fiber/v2"
@@ -62,21 +64,21 @@ func GetOauthToken(url string, body io.Reader) (*OAuthToken, error) {
 		return nil, err
 	}
 
-	var GoogleOauthTokenRes map[string]interface{}
+	var OAuthTokenRes map[string]interface{}
 
-	if err := json.Unmarshal(resBody.Bytes(), &GoogleOauthTokenRes); err != nil {
+	if err := json.Unmarshal(resBody.Bytes(), &OAuthTokenRes); err != nil {
 		return nil, err
 	}
 	var tokenBody *OAuthToken
 
-	if _, ok := GoogleOauthTokenRes["id_token"].(string); ok {
+	if _, ok := OAuthTokenRes["id_token"].(string); ok {
 		tokenBody = &OAuthToken{
-			Access_token: GoogleOauthTokenRes["access_token"].(string),
-			Id_token:     GoogleOauthTokenRes["id_token"].(string),
+			Access_token: OAuthTokenRes["access_token"].(string),
+			Id_token:     OAuthTokenRes["id_token"].(string),
 		}
 	} else {
 		tokenBody = &OAuthToken{
-			Access_token: GoogleOauthTokenRes["access_token"].(string),
+			Access_token: OAuthTokenRes["access_token"].(string),
 		}
 
 	}
@@ -195,7 +197,7 @@ func GetFacebookUser(access_token string) (*OAuthUser, error) {
 	return GetOAuthUser(rootUrl, nil)
 }
 
-func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Database, oauthUser *OAuthUser) (*models.User, error) {
+func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Database, oauthUser *OAuthUser, jwtSecret string) (*models.User, error) {
 	User := new(models.User)
 	User.Email = oauthUser.Email
 	User.Name = oauthUser.Name
@@ -206,8 +208,29 @@ func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Databas
 	}
 
 	store := session.Get(ctx)
-	defer store.Save()
 	store.Set(constants.USER_ID_SESSION_KEY, User.ID)
+	defer store.Save()
+
+	// sign a JWT cookie based on the session
+	claims := jwt.MapClaims{
+		constants.USER_ID_SESSION_KEY: User.ID,
+		"exp":                         time.Now().Add(time.Hour * 24).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return nil, err
+	}
+	cookie := fiber.Cookie{
+		Name:     constants.JWT_COOKIE_NAME,
+		Value:    signedToken,
+		MaxAge:   86400,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	}
+
+	// set the cookies in the response
+	ctx.Cookie(&cookie)
 
 	return User, nil
 }

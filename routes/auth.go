@@ -20,7 +20,7 @@ func RegisterAuth(api fiber.Router, config configuration.Config, session *sessio
 		facebook.New(config.GetString("OAUTH_FACEBOOK_CLIENT_ID"), config.GetString("OAUTH_FACEBOOK_SECRET"), config.GetString("OAUTH_FACEBOOK_REDIRECT_URI")),
 	)
 
-	api.Get("/user", Controller.IsAuthenticatedHandler(session, db))
+	api.Get("/user", Controller.IsAuthenticatedHandler(session, db, config.GetString("JWT_SECRET")))
 
 	// api.Get("/:provider/callback", Controller.OAuthLoginCallback(session, db))
 

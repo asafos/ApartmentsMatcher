@@ -12,7 +12,7 @@ function AppContainer() {
         if (user.state === DataObjectState.NotStarted) {
             fetchUser()
         }
-    }, [user])
+    }, [])
 
     return (
         <App user={user} />

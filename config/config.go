@@ -12,17 +12,14 @@ import (
 	bcrypt_driver "github.com/thomasvvugt/fiber-hashing/driver/bcrypt"
 
 	"github.com/alexedwards/argon2id"
+	"github.com/gofiber/session/v2/provider/mysql"
 	"github.com/jameskeane/bcrypt"
 
 	"github.com/gofiber/fiber/v2"
 
 	fsession "github.com/fasthttp/session/v2"
 	"github.com/gofiber/session/v2"
-	"github.com/gofiber/session/v2/provider/memcache"
-	"github.com/gofiber/session/v2/provider/mysql"
-	"github.com/gofiber/session/v2/provider/postgres"
 	"github.com/gofiber/session/v2/provider/redis"
-	"github.com/gofiber/session/v2/provider/sqlite3"
 )
 
 type Config struct {
@@ -420,19 +417,19 @@ func (config *Config) GetHasherConfig() hashing.Config {
 func (config *Config) GetSessionConfig() session.Config {
 	var provider fsession.Provider
 	switch strings.ToLower(config.GetString("SESSION_PROVIDER")) {
-	case "memcache":
-		sessionProvider, err := memcache.New(memcache.Config{
-			KeyPrefix: config.GetString("SESSION_KEYPREFIX"),
-			ServerList: []string{
-				config.GetString("SESSION_HOST") + ":" + config.GetString("SESSION_PORT"),
-			},
-		})
-		if err != nil {
-			fmt.Println("failed to initialized memcache session provider:", err.Error())
-			break
-		}
-		provider = sessionProvider
-		break
+	// case "memcache":
+	// 	sessionProvider, err := memcache.New(memcache.Config{
+	// 		KeyPrefix: config.GetString("SESSION_KEYPREFIX"),
+	// 		ServerList: []string{
+	// 			config.GetString("SESSION_HOST") + ":" + config.GetString("SESSION_PORT"),
+	// 		},
+	// 	})
+	// 	if err != nil {
+	// 		fmt.Println("failed to initialized memcache session provider:", err.Error())
+	// 		break
+	// 	}
+	// 	provider = sessionProvider
+	// 	break
 	case "mysql":
 		sessionProvider, err := mysql.New(mysql.Config{
 			Host:      config.GetString("SESSION_HOST"),
@@ -448,21 +445,21 @@ func (config *Config) GetSessionConfig() session.Config {
 		}
 		provider = sessionProvider
 		break
-	case "postgresql", "postgres":
-		sessionProvider, err := postgres.New(postgres.Config{
-			Host:      config.GetString("SESSION_HOST"),
-			Port:      config.GetInt64("SESSION_PORT"),
-			Username:  config.GetString("SESSION_USERNAME"),
-			Password:  config.GetString("SESSION_PASSWORD"),
-			Database:  config.GetString("SESSION_DATABASE"),
-			TableName: config.GetString("SESSION_TABLENAME"),
-		})
-		if err != nil {
-			fmt.Println("failed to initialized postgresql session provider:", err.Error())
-			break
-		}
-		provider = sessionProvider
-		break
+	// case "postgresql", "postgres":
+	// 	sessionProvider, err := postgres.New(postgres.Config{
+	// 		Host:      config.GetString("SESSION_HOST"),
+	// 		Port:      config.GetInt64("SESSION_PORT"),
+	// 		Username:  config.GetString("SESSION_USERNAME"),
+	// 		Password:  config.GetString("SESSION_PASSWORD"),
+	// 		Database:  config.GetString("SESSION_DATABASE"),
+	// 		TableName: config.GetString("SESSION_TABLENAME"),
+	// 	})
+	// 	if err != nil {
+	// 		fmt.Println("failed to initialized postgresql session provider:", err.Error())
+	// 		break
+	// 	}
+	// 	provider = sessionProvider
+	// 	break
 	case "redis":
 		sessionProvider, err := redis.New(redis.Config{
 			KeyPrefix: config.GetString("SESSION_KEYPREFIX"),
@@ -476,17 +473,17 @@ func (config *Config) GetSessionConfig() session.Config {
 		}
 		provider = sessionProvider
 		break
-	case "sqlite3":
-		sessionProvider, err := sqlite3.New(sqlite3.Config{
-			DBPath:    config.GetString("SESSION_DATABASE"),
-			TableName: config.GetString("SESSION_TABLENAME"),
-		})
-		if err != nil {
-			fmt.Println("failed to initialized sqlite3 session provider:", err.Error())
-			break
-		}
-		provider = sessionProvider
-		break
+		// case "sqlite3":
+		// 	sessionProvider, err := sqlite3.New(sqlite3.Config{
+		// 		DBPath:    config.GetString("SESSION_DATABASE"),
+		// 		TableName: config.GetString("SESSION_TABLENAME"),
+		// 	})
+		// 	if err != nil {
+		// 		fmt.Println("failed to initialized sqlite3 session provider:", err.Error())
+		// 		break
+		// 	}
+		// 	provider = sessionProvider
+		// 	break
 	}
 
 	return session.Config{

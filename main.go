@@ -110,7 +110,7 @@ func main() {
 	// Custom 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
 		if err := c.SendStatus(fiber.StatusNotFound); err != nil {
-			panic(err)
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
 		// if err := c.Render("errors/404", fiber.Map{}); err != nil {
 		// 	return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -134,9 +134,10 @@ func main() {
 }
 
 func (app *App) registerMiddlewares(config *configuration.Config, session *session.Session, db *database.Database) {
-	app.Use("/api", middleware.Auth(session))
-	app.Use("/api/*/users", middleware.AdminRole(session, db))
-	app.Use("/api/*/roles", middleware.AdminRole(session, db))
+	jwtSecret := config.GetString("JWT_SECRET")
+	app.Use("/api", middleware.Auth(session, jwtSecret))
+	app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
+	app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
 
 	// Middleware - Custom Access Logger based on zap
 	if config.GetBool("MW_ACCESS_LOGGER_ENABLED") {

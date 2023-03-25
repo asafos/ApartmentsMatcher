@@ -1,7 +1,6 @@
 package web
 
 import (
-	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/app/models"
 	apiServices "fiber-boilerplate/app/services/api"
 	authServices "fiber-boilerplate/app/services/auth"
@@ -13,34 +12,19 @@ import (
 	"github.com/gofiber/session/v2"
 )
 
-func IsAuthenticated(session *session.Session, ctx *fiber.Ctx) (userID uint, authenticated bool) {
-	return utils.GetUserIDFromSession(session, ctx)
-}
-
-func IsAuthenticatedHandler(session *session.Session, db *database.Database) fiber.Handler {
+func IsAuthenticatedHandler(session *session.Session, db *database.Database, jwtSecret string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		userID, ok := utils.GetUserIDFromSession(session, ctx)
+		userID, ok := authServices.IsAuthenticated(session, ctx, jwtSecret)
 		if !ok {
 			return fiber.NewError(fiber.StatusUnauthorized, "user not logged in")
 		}
 		User := new(models.User)
+
 		if response := apiServices.GetUser(db, User, fmt.Sprint(userID)); response.Error != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the user: "+response.Error.Error())
 		}
 		return ctx.JSON(User)
 	}
-}
-
-func IsAdmin(session *session.Session, ctx *fiber.Ctx, db *database.Database) (authenticated bool) {
-	userID, ok := utils.GetUserIDFromSession(session, ctx)
-	if !ok {
-		return false
-	}
-	user, err := FindUserByID(db, userID)
-	if err != nil || user == nil {
-		return false
-	}
-	return models.RoleEnum(user.RoleID) == models.AdminRole
 }
 
 func AuthorizeGoogle(config configuration.Config, session *session.Session, db *database.Database) fiber.Handler {
@@ -54,7 +38,7 @@ func AuthorizeGoogle(config configuration.Config, session *session.Session, db *
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-		User, err := authServices.AddOAuthUser(ctx, session, db, oauthUser)
+		User, err := authServices.AddOAuthUser(ctx, session, db, oauthUser, config.GetString("JWT_SECRET"))
 		if err != nil {
 			return err
 		}
@@ -82,7 +66,7 @@ func AuthorizeFacebook(config configuration.Config, session *session.Session, db
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-		User, err := authServices.AddOAuthUser(ctx, session, db, oauthUser)
+		User, err := authServices.AddOAuthUser(ctx, session, db, oauthUser, config.GetString("JWT_SECRET"))
 		if err != nil {
 			return err
 		}
