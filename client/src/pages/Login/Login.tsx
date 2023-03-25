@@ -48,7 +48,7 @@ const Login = (props: Props) => {
                             onFacebookClick(response.signedRequest)
                         }}
                         scope="email"
-                        render={({ onClick, logout }) => (
+                        render={({ onClick }) => (
                             <Button
                                 borderRadius={0}
                                 type="submit"

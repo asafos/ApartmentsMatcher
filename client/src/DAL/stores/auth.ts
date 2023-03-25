@@ -16,10 +16,12 @@ interface State {
 const useAuthStore = create<State>((set) => ({
     user: { data: null, state: DataObjectState.NotStarted },
     facebookLogin: async (authCode: string) => {
-        facebookLogin(authCode)
+        const user = await facebookLogin(authCode)
+        set({ user: { data: user.data, state: DataObjectState.Succeeded } })
     },
     googleLogin: async (authCode) => {
-        googleLogin(authCode)
+        const user = await googleLogin(authCode)
+        set({ user: { data: user.data, state: DataObjectState.Succeeded } })
     },
     fetchUser: async () => {
         set({ user: { data: null, state: DataObjectState.InProgress } })
