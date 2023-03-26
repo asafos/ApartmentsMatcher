@@ -57,6 +57,10 @@ func GetUser(db *database.Database) fiber.Handler {
 			}
 			return err
 		}
+		// userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		// if userID != User.ID {
+		// 	return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		// }
 		// Match role to user
 		if User.RoleID != 0 {
 			Role := new(models.Role)
@@ -95,6 +99,10 @@ func AddUser(db *database.Database) fiber.Handler {
 				User.Role = *Role
 			}
 		}
+		errors := utils.ValidateStruct(*User)
+		if errors != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
+		}
 		err := ctx.JSON(User)
 		if err != nil {
 			return utils.SendError(ctx, "error occurred when returning JSON of a user", fiber.StatusInternalServerError)
@@ -111,6 +119,10 @@ func EditUser(db *database.Database) fiber.Handler {
 		User := new(models.User)
 		if err := ctx.BodyParser(EditUser); err != nil {
 			return utils.SendError(ctx, "An error occurred when parsing the edited user: "+err.Error(), fiber.StatusBadRequest)
+		}
+		errors := utils.ValidateStruct(*EditUser)
+		if errors != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
 		}
 		if response := services.GetUser(db, User, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when retrieving the existing user: "+response.Error.Error(), fiber.StatusNotFound)
@@ -129,6 +141,10 @@ func EditUser(db *database.Database) fiber.Handler {
 			}
 			return err
 		}
+		// userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		// if userID != User.ID {
+		// 	return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		// }
 		User.Name = EditUser.Name
 		User.Email = EditUser.Email
 		User.RoleID = EditUser.RoleID
@@ -162,6 +178,10 @@ func DeleteUser(db *database.Database) fiber.Handler {
 		if response := services.GetUser(db, &User, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when finding the user to be deleted"+response.Error.Error(), fiber.StatusNotFound)
 		}
+		// userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		// if userID != User.ID {
+		// 	return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		// }
 		services.DeleteUser(db, &User)
 
 		err := ctx.JSON(fiber.Map{

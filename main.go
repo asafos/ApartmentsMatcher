@@ -134,8 +134,6 @@ func main() {
 }
 
 func (app *App) registerMiddlewares(config *configuration.Config, session *session.Session, db *database.Database) {
-	jwtSecret := config.GetString("JWT_SECRET")
-
 	// Middleware - Custom Access Logger based on zap
 	if config.GetBool("MW_ACCESS_LOGGER_ENABLED") {
 		app.Use(middleware.AccessLogger(&middleware.AccessLoggerConfig{
@@ -274,7 +272,10 @@ func (app *App) registerMiddlewares(config *configuration.Config, session *sessi
 			ContextKey: config.GetString("MW_FIBER_REQUESTID_CONTEXTKEY"),
 		}))
 	}
+
 	// TODO: Middleware - Timeout
+
+	jwtSecret := config.GetString("JWT_SECRET")
 
 	app.Use("/api", middleware.Auth(session, jwtSecret))
 	app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))

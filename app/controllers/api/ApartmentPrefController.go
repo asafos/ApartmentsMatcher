@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fiber-boilerplate/app/constants"
 	utils "fiber-boilerplate/app/controllers/utils"
 	"fiber-boilerplate/app/models"
 	services "fiber-boilerplate/app/services/api"
@@ -45,6 +46,10 @@ func GetApartmentPref(db *database.Database) fiber.Handler {
 			}
 			return err
 		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != ApartmentPref.UserID {
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		}
 		err := ctx.JSON(ApartmentPref)
 		if err != nil {
 			return utils.SendError(ctx, "Error occurred when returning JSON of a apartmentPref: "+err.Error(), fiber.StatusInternalServerError)
@@ -59,6 +64,10 @@ func AddApartmentPref(db *database.Database) fiber.Handler {
 		ApartmentPref := new(models.ApartmentPref)
 		if err := ctx.BodyParser(ApartmentPref); err != nil {
 			return utils.SendError(ctx, "an error occurred when parsing the new apartmentPref", fiber.StatusBadRequest)
+		}
+		errors := utils.ValidateStruct(*ApartmentPref)
+		if errors != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
 		}
 		if response := services.AddApartmentPref(db, ApartmentPref); response.Error != nil {
 			return utils.SendError(ctx, "an error occurred when storing the new apartmentPref"+response.Error.Error(), fiber.StatusInternalServerError)
@@ -80,6 +89,10 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(EditApartmentPref); err != nil {
 			return utils.SendError(ctx, "An error occurred when parsing the edited apartmentPref: "+err.Error(), fiber.StatusBadRequest)
 		}
+		errors := utils.ValidateStruct(*EditApartmentPref)
+		if errors != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
+		}
 		if response := services.GetApartmentPref(db, ApartmentPref, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when retrieving the existing apartmentPref: "+response.Error.Error(), fiber.StatusNotFound)
 		}
@@ -96,6 +109,10 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 				return utils.SendError(ctx, "Error occurred when returning JSON of a apartmentPref: "+err.Error(), fiber.StatusInternalServerError)
 			}
 			return err
+		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != ApartmentPref.UserID {
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
 		}
 		ApartmentPref.NumberOfRooms = EditApartmentPref.NumberOfRooms
 		ApartmentPref.Price = EditApartmentPref.Price
@@ -127,6 +144,10 @@ func DeleteApartmentPref(db *database.Database) fiber.Handler {
 		// services.Find(&ApartmentPref, id)
 		if response := services.GetApartmentPref(db, &ApartmentPref, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when finding the apartmentPref to be deleted"+response.Error.Error(), fiber.StatusNotFound)
+		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != ApartmentPref.UserID {
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
 		}
 		services.DeleteApartmentPref(db, &ApartmentPref)
 

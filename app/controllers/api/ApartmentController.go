@@ -90,6 +90,10 @@ func AddApartment(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(Apartment); err != nil {
 			return utils.SendError(ctx, "an error occurred when parsing the new apartment", fiber.StatusBadRequest)
 		}
+		errors := utils.ValidateStruct(*Apartment)
+		if errors != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
+		}
 		userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		if userID != Apartment.UserID {
 			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
@@ -114,6 +118,10 @@ func EditApartment(db *database.Database) fiber.Handler {
 		if err := ctx.BodyParser(EditApartment); err != nil {
 			return utils.SendError(ctx, "An error occurred when parsing the edited apartment: "+err.Error(), fiber.StatusBadRequest)
 		}
+		errors := utils.ValidateStruct(*EditApartment)
+		if errors != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
+		}
 		if response := services.GetApartment(db, Apartment, id); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when retrieving the existing apartment: "+response.Error.Error(), fiber.StatusNotFound)
 		}
@@ -130,6 +138,10 @@ func EditApartment(db *database.Database) fiber.Handler {
 				return utils.SendError(ctx, "Error occurred when returning JSON of a apartment: "+err.Error(), fiber.StatusInternalServerError)
 			}
 			return err
+		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != Apartment.UserID {
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
 		}
 		Apartment.NumberOfRooms = EditApartment.NumberOfRooms
 		Apartment.Price = EditApartment.Price
@@ -161,6 +173,10 @@ func DeleteApartment(db *database.Database) fiber.Handler {
 		// services.Find(&Apartment, id)
 		if response := db.Find(&Apartment); response.Error != nil {
 			return utils.SendError(ctx, "An error occurred when finding the apartment to be deleted"+response.Error.Error(), fiber.StatusNotFound)
+		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != Apartment.UserID {
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
 		}
 		services.DeleteApartment(db, &Apartment)
 
