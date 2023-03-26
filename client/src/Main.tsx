@@ -18,12 +18,10 @@ function Main() {
   const routeResult = useRoutes(mainRoutes);
   return (
     <Flex
-      flexDirection="column"
-      width="100wh"
+      width="100%"
       height="100vh"
+      display="block"
       backgroundColor="gray.200"
-      justifyContent="center"
-      alignItems="center"
     >
       {routeResult}
     </Flex>

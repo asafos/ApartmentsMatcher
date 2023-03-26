@@ -1,6 +1,8 @@
 export enum DataObjectState {
     NotStarted,
-    InProgress,
+    Fetching,
+    Adding,
+    Removing,
     Succeeded,
     Failed
 }

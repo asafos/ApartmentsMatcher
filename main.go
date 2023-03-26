@@ -135,9 +135,6 @@ func main() {
 
 func (app *App) registerMiddlewares(config *configuration.Config, session *session.Session, db *database.Database) {
 	jwtSecret := config.GetString("JWT_SECRET")
-	app.Use("/api", middleware.Auth(session, jwtSecret))
-	app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
-	app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
 
 	// Middleware - Custom Access Logger based on zap
 	if config.GetBool("MW_ACCESS_LOGGER_ENABLED") {
@@ -277,8 +274,11 @@ func (app *App) registerMiddlewares(config *configuration.Config, session *sessi
 			ContextKey: config.GetString("MW_FIBER_REQUESTID_CONTEXTKEY"),
 		}))
 	}
-
 	// TODO: Middleware - Timeout
+
+	app.Use("/api", middleware.Auth(session, jwtSecret))
+	app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
+	app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
 }
 
 // Stop the Fiber application

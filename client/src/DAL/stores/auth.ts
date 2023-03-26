@@ -20,7 +20,7 @@ const useAuthStore = create<State>((set) => ({
         set({ user: { data: user.data, state: DataObjectState.Succeeded } })
     },
     fetchUser: async () => {
-        set({ user: { data: null, state: DataObjectState.InProgress } })
+        set({ user: { data: null, state: DataObjectState.Fetching } })
         try {
             const { data } = await fetchUser()
             set({ user: { data, state: DataObjectState.Succeeded } })

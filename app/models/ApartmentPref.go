@@ -10,8 +10,8 @@ type ApartmentPref struct {
 	Roof           bool          `json:"roof"`
 	Parking        bool          `json:"parking"`
 	Elevator       bool          `json:"elevator"`
-	AnimalsAllowed bool          `json:"animalsAllowed"`
+	PetsAllowed    bool          `json:"petsAllowed"`
 	Renovated      bool          `json:"renovated"`
-	AvailableDate  TimeSlice     `json:"availableDate" gorm:"type:text"`
+	AvailableDates TimeSlice     `json:"availableDates" gorm:"type:text"`
 	Location       LocationSlice `json:"location" gorm:"type:text"`
 }

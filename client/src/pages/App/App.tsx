@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate, useRoutes } from "react-router-dom";
-import { Apartment } from "../../DAL/services/auth/apartments";
+import { Apartment } from "../../DAL/services/apartments/apartments";
 import { User } from "../../DAL/services/auth/auth";
 import { DataObject, DataObjectState } from "../../DAL/stores/types";
 import { appRoutes } from "../../routes";
@@ -30,10 +30,10 @@ function App(props: Props) {
     }, [apartment])
 
     if (
-        user.state === DataObjectState.InProgress
+        user.state === DataObjectState.Fetching
         || user.state === DataObjectState.NotStarted
         || apartment.state === DataObjectState.NotStarted
-        || apartment.state === DataObjectState.InProgress
+        || apartment.state === DataObjectState.Fetching
     ) {
         return <div>Loading...</div>
     }

@@ -2,11 +2,15 @@ package serviceApi
 
 import (
 	"fiber-boilerplate/app/models"
-	"time"
 )
 
-func isDateBetween(date, start, end time.Time) bool {
-	return date.After(start) && date.Before(end)
+func dateRangesOverlap(dateSliceA, dateSliceB models.TimeSlice) bool {
+	// check if either of the date ranges is invalid
+	if dateSliceA[0].After(dateSliceA[1]) || dateSliceB[0].After(dateSliceB[1]) {
+		return false
+	}
+	// check if the date ranges overlap
+	return dateSliceA[0].Before(dateSliceB[1]) && dateSliceB[0].Before(dateSliceA[1])
 }
 
 func IsApartmentMatchesPref(a *models.Apartment, ap *models.ApartmentPref) bool {
@@ -23,7 +27,7 @@ func IsApartmentMatchesPref(a *models.Apartment, ap *models.ApartmentPref) bool 
 	if !isLocationCompatible {
 		return false
 	}
-	if !isDateBetween(a.AvailableDate, ap.AvailableDate[0], ap.AvailableDate[1]) {
+	if !dateRangesOverlap(a.AvailableDates, ap.AvailableDates) {
 		return false
 	}
 

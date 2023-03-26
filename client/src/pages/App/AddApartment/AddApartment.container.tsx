@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { Apartment } from "../../../DAL/services/auth/apartments";
+import { ApartmentToAdd } from "../../../DAL/services/apartments/apartments";
 import { useApartmentsStore } from "../../../DAL/stores/apartments";
 import { useAuthStore } from "../../../DAL/stores/auth";
 import { AddApartment } from "./AddApartment";
@@ -9,9 +8,17 @@ type Props = {
 
 const AddApartmentContainer = (props: Props) => {
     const { } = props
-    const apartment = useApartmentsStore(({ apartment }) => apartment)
+    const addUserApartment = useApartmentsStore(({ addUserApartment }) => addUserApartment)
+    const user = useAuthStore(({ user }) => user)
 
-    return <AddApartment apartment={apartment.data} />;
+    const handleSave = (apartmentToAdd: Omit<ApartmentToAdd, 'user_id'>) => {
+        if (!user.data) {
+            return
+        }
+        addUserApartment({ ...apartmentToAdd, user_id: user.data.id })
+    }
+
+    return <AddApartment onSave={handleSave} />;
 }
 
 export { AddApartmentContainer }

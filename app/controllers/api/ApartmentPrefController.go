@@ -103,9 +103,9 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 		ApartmentPref.Roof = EditApartmentPref.Roof
 		ApartmentPref.Parking = EditApartmentPref.Parking
 		ApartmentPref.Elevator = EditApartmentPref.Elevator
-		ApartmentPref.AnimalsAllowed = EditApartmentPref.AnimalsAllowed
+		ApartmentPref.PetsAllowed = EditApartmentPref.PetsAllowed
 		ApartmentPref.Renovated = EditApartmentPref.Renovated
-		ApartmentPref.AvailableDate = EditApartmentPref.AvailableDate
+		ApartmentPref.AvailableDates = EditApartmentPref.AvailableDates
 		ApartmentPref.Location = EditApartmentPref.Location
 
 		// Save apartmentPref

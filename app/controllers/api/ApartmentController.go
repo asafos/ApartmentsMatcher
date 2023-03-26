@@ -69,7 +69,7 @@ func GetUserApartments(db *database.Database) fiber.Handler {
 		}
 		userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		if userID != uint(intID) {
-			return utils.SendError(ctx, "Unauthorized user data", fiber.StatusUnauthorized)
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
 		}
 		var Apartments []models.Apartment
 		if response := services.GetApartmentsByUserID(db, &Apartments, id); response.Error != nil {
@@ -89,6 +89,10 @@ func AddApartment(db *database.Database) fiber.Handler {
 		Apartment := new(models.Apartment)
 		if err := ctx.BodyParser(Apartment); err != nil {
 			return utils.SendError(ctx, "an error occurred when parsing the new apartment", fiber.StatusBadRequest)
+		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != Apartment.UserID {
+			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
 		}
 		if response := services.AddApartment(db, Apartment); response.Error != nil {
 			return utils.SendError(ctx, "an error occurred when storing the new apartment"+response.Error.Error(), fiber.StatusInternalServerError)
@@ -133,9 +137,9 @@ func EditApartment(db *database.Database) fiber.Handler {
 		Apartment.Roof = EditApartment.Roof
 		Apartment.Parking = EditApartment.Parking
 		Apartment.Elevator = EditApartment.Elevator
-		Apartment.AnimalsAllowed = EditApartment.AnimalsAllowed
+		Apartment.PetsAllowed = EditApartment.PetsAllowed
 		Apartment.Renovated = EditApartment.Renovated
-		Apartment.AvailableDate = EditApartment.AvailableDate
+		Apartment.AvailableDates = EditApartment.AvailableDates
 		Apartment.Location = EditApartment.Location
 
 		// Save apartment

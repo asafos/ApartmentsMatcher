@@ -1,9 +1,5 @@
 package models
 
-import (
-	"time"
-)
-
 // Apartment model
 type Apartment struct {
 	CommonModelFields
@@ -14,8 +10,8 @@ type Apartment struct {
 	Roof           bool      `json:"roof"`
 	Parking        bool      `json:"parking"`
 	Elevator       bool      `json:"elevator"`
-	AnimalsAllowed bool      `json:"animalsAllowed"`
+	PetsAllowed    bool      `json:"petsAllowed"`
 	Renovated      bool      `json:"renovated"`
-	AvailableDate  time.Time `json:"availableDate"`
+	AvailableDates TimeSlice `json:"availableDates" gorm:"type:text"`
 	Location       Location  `json:"location"`
 }
