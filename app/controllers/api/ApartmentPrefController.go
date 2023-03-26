@@ -15,11 +15,11 @@ func GetAllApartmentPrefs(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		var ApartmentPrefs []models.ApartmentPref
 		if response := services.GetAllApartmentPrefs(db, &ApartmentPrefs); response.Error != nil {
-			return utils.SendError(ctx, "Error occurred while retrieving apartmentPrefs from the database: "+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred while retrieving apartmentPrefs from the database: "+response.Error.Error())
 		}
 		err := ctx.JSON(ApartmentPrefs)
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of apartmentPrefs: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of apartmentPrefs: "+err.Error())
 		}
 		return err
 	}
@@ -31,28 +31,28 @@ func GetApartmentPref(db *database.Database) fiber.Handler {
 		ApartmentPref := new(models.ApartmentPref)
 		id := ctx.Params("id")
 		if response := services.GetApartmentPref(db, ApartmentPref, id); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when retrieving the apartmentPref: "+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the apartmentPref: "+response.Error.Error())
 		}
 		if ApartmentPref.ID == 0 {
 			err := ctx.SendStatus(fiber.StatusNotFound)
 			if err != nil {
-				return utils.SendError(ctx, "Cannot return status not found: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Cannot return status not found: "+err.Error())
 			}
 			err = ctx.JSON(fiber.Map{
 				"ID": id,
 			})
 			if err != nil {
-				return utils.SendError(ctx, "Error occurred when returning JSON of a role: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a role: "+err.Error())
 			}
 			return err
 		}
 		userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		if userID != ApartmentPref.UserID {
-			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized user")
 		}
 		err := ctx.JSON(ApartmentPref)
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of a apartmentPref: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a apartmentPref: "+err.Error())
 		}
 		return err
 	}
@@ -63,18 +63,18 @@ func AddApartmentPref(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		ApartmentPref := new(models.ApartmentPref)
 		if err := ctx.BodyParser(ApartmentPref); err != nil {
-			return utils.SendError(ctx, "an error occurred when parsing the new apartmentPref", fiber.StatusBadRequest)
+			return fiber.NewError(fiber.StatusBadRequest, "an error occurred when parsing the new apartmentPref")
 		}
 		errors := utils.ValidateStruct(*ApartmentPref)
 		if errors != nil {
 			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
 		}
 		if response := services.AddApartmentPref(db, ApartmentPref); response.Error != nil {
-			return utils.SendError(ctx, "an error occurred when storing the new apartmentPref"+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "an error occurred when storing the new apartmentPref"+response.Error.Error())
 		}
 		err := ctx.JSON(ApartmentPref)
 		if err != nil {
-			return utils.SendError(ctx, "error occurred when returning JSON of a apartmentPref", fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "error occurred when returning JSON of a apartmentPref")
 		}
 		return err
 	}
@@ -87,32 +87,32 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 		EditApartmentPref := new(models.ApartmentPref)
 		ApartmentPref := new(models.ApartmentPref)
 		if err := ctx.BodyParser(EditApartmentPref); err != nil {
-			return utils.SendError(ctx, "An error occurred when parsing the edited apartmentPref: "+err.Error(), fiber.StatusBadRequest)
+			return fiber.NewError(fiber.StatusBadRequest, "An error occurred when parsing the edited apartmentPref: "+err.Error())
 		}
 		errors := utils.ValidateStruct(*EditApartmentPref)
 		if errors != nil {
 			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
 		}
 		if response := services.GetApartmentPref(db, ApartmentPref, id); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when retrieving the existing apartmentPref: "+response.Error.Error(), fiber.StatusNotFound)
+			return fiber.NewError(fiber.StatusNotFound, "An error occurred when retrieving the existing apartmentPref: "+response.Error.Error())
 		}
 		// ApartmentPref does not exist
 		if ApartmentPref.ID == 0 {
 			err := ctx.SendStatus(fiber.StatusNotFound)
 			if err != nil {
-				return utils.SendError(ctx, "Cannot return status not found: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Cannot return status not found: "+err.Error())
 			}
 			err = ctx.JSON(fiber.Map{
 				"ID": id,
 			})
 			if err != nil {
-				return utils.SendError(ctx, "Error occurred when returning JSON of a apartmentPref: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a apartmentPref: "+err.Error())
 			}
 			return err
 		}
 		userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		if userID != ApartmentPref.UserID {
-			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized user")
 		}
 		ApartmentPref.NumberOfRooms = EditApartmentPref.NumberOfRooms
 		ApartmentPref.Price = EditApartmentPref.Price
@@ -130,7 +130,7 @@ func EditApartmentPref(db *database.Database) fiber.Handler {
 
 		err := ctx.JSON(ApartmentPref)
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of a apartmentPref: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a apartmentPref: "+err.Error())
 		}
 		return err
 	}
@@ -143,11 +143,11 @@ func DeleteApartmentPref(db *database.Database) fiber.Handler {
 		var ApartmentPref models.ApartmentPref
 		// services.Find(&ApartmentPref, id)
 		if response := services.GetApartmentPref(db, &ApartmentPref, id); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when finding the apartmentPref to be deleted"+response.Error.Error(), fiber.StatusNotFound)
+			return fiber.NewError(fiber.StatusNotFound, "An error occurred when finding the apartmentPref to be deleted"+response.Error.Error())
 		}
 		userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		if userID != ApartmentPref.UserID {
-			return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized user")
 		}
 		services.DeleteApartmentPref(db, &ApartmentPref)
 
@@ -156,7 +156,7 @@ func DeleteApartmentPref(db *database.Database) fiber.Handler {
 			"Deleted": true,
 		})
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of a apartmentPref: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a apartmentPref: "+err.Error())
 		}
 		return err
 	}

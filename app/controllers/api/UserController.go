@@ -14,14 +14,14 @@ func GetAllUsers(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		var Users []models.User
 		if response := services.GetAllUsers(db, &Users); response.Error != nil {
-			return utils.SendError(ctx, "Error occurred while retrieving users from the database: "+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred while retrieving users from the database: "+response.Error.Error())
 		}
 		// Match roles to users
 		for index, User := range Users {
 			if User.RoleID != 0 {
 				Role := new(models.Role)
 				if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-					return utils.SendError(ctx, "An error occurred when retrieving the role: "+response.Error.Error(), fiber.StatusInternalServerError)
+					return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the role: "+response.Error.Error())
 				}
 				if Role.ID != 0 {
 					Users[index].Role = *Role
@@ -30,7 +30,7 @@ func GetAllUsers(db *database.Database) fiber.Handler {
 		}
 		err := ctx.JSON(Users)
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of users: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of users: "+err.Error())
 		}
 		return err
 	}
@@ -42,30 +42,30 @@ func GetUser(db *database.Database) fiber.Handler {
 		User := new(models.User)
 		id := ctx.Params("id")
 		if response := services.GetUser(db, User, id); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when retrieving the user: "+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the user: "+response.Error.Error())
 		}
 		if User.ID == 0 {
 			err := ctx.SendStatus(fiber.StatusNotFound)
 			if err != nil {
-				return utils.SendError(ctx, "Cannot return status not found: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Cannot return status not found: "+err.Error())
 			}
 			err = ctx.JSON(fiber.Map{
 				"ID": id,
 			})
 			if err != nil {
-				return utils.SendError(ctx, "Error occurred when returning JSON of a role: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a role: "+err.Error())
 			}
 			return err
 		}
 		// userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		// if userID != User.ID {
-		// 	return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		// 	return fiber.fiber.StatusUnauthorized, NewError("Unauthorized user")
 		// }
 		// Match role to user
 		if User.RoleID != 0 {
 			Role := new(models.Role)
 			if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-				return utils.SendError(ctx, "An error occurred when retrieving the role: "+response.Error.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the role: "+response.Error.Error())
 			}
 			if Role.ID != 0 {
 				User.Role = *Role
@@ -73,7 +73,7 @@ func GetUser(db *database.Database) fiber.Handler {
 		}
 		err := ctx.JSON(User)
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of a user: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a user: "+err.Error())
 		}
 		return err
 	}
@@ -84,16 +84,16 @@ func AddUser(db *database.Database) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		User := new(models.User)
 		if err := ctx.BodyParser(User); err != nil {
-			return utils.SendError(ctx, "an error occurred when parsing the new user", fiber.StatusBadRequest)
+			return fiber.NewError(fiber.StatusBadRequest, "an error occurred when parsing the new user")
 		}
 		if response := services.AddUser(db, User); response.Error != nil {
-			return utils.SendError(ctx, "an error occurred when storing the new user"+response.Error.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "an error occurred when storing the new user"+response.Error.Error())
 		}
 		// Match role to user
 		if User.RoleID != 0 {
 			Role := new(models.Role)
 			if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-				return utils.SendError(ctx, "an error occurred when retrieving the role"+response.Error.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "an error occurred when retrieving the role"+response.Error.Error())
 			}
 			if Role.ID != 0 {
 				User.Role = *Role
@@ -105,7 +105,7 @@ func AddUser(db *database.Database) fiber.Handler {
 		}
 		err := ctx.JSON(User)
 		if err != nil {
-			return utils.SendError(ctx, "error occurred when returning JSON of a user", fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "error occurred when returning JSON of a user")
 		}
 		return err
 	}
@@ -118,32 +118,32 @@ func EditUser(db *database.Database) fiber.Handler {
 		EditUser := new(models.User)
 		User := new(models.User)
 		if err := ctx.BodyParser(EditUser); err != nil {
-			return utils.SendError(ctx, "An error occurred when parsing the edited user: "+err.Error(), fiber.StatusBadRequest)
+			return fiber.NewError(fiber.StatusBadRequest, "An error occurred when parsing the edited user: "+err.Error())
 		}
 		errors := utils.ValidateStruct(*EditUser)
 		if errors != nil {
 			return ctx.Status(fiber.StatusBadRequest).JSON(errors)
 		}
 		if response := services.GetUser(db, User, id); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when retrieving the existing user: "+response.Error.Error(), fiber.StatusNotFound)
+			return fiber.NewError(fiber.StatusNotFound, "An error occurred when retrieving the existing user: "+response.Error.Error())
 		}
 		// User does not exist
 		if User.ID == 0 {
 			err := ctx.SendStatus(fiber.StatusNotFound)
 			if err != nil {
-				return utils.SendError(ctx, "Cannot return status not found: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Cannot return status not found: "+err.Error())
 			}
 			err = ctx.JSON(fiber.Map{
 				"ID": id,
 			})
 			if err != nil {
-				return utils.SendError(ctx, "Error occurred when returning JSON of a user: "+err.Error(), fiber.StatusInternalServerError)
+				return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a user: "+err.Error())
 			}
 			return err
 		}
 		// userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		// if userID != User.ID {
-		// 	return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		// 	return fiber.fiber.StatusUnauthorized, NewError("Unauthorized user")
 		// }
 		User.Name = EditUser.Name
 		User.Email = EditUser.Email
@@ -152,7 +152,7 @@ func EditUser(db *database.Database) fiber.Handler {
 		if User.RoleID != 0 {
 			Role := new(models.Role)
 			if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-				return utils.SendError(ctx, "An error occurred when retrieving the role"+response.Error.Error(), fiber.StatusBadRequest)
+				return fiber.NewError(fiber.StatusBadRequest, "An error occurred when retrieving the role"+response.Error.Error())
 			}
 			if Role.ID != 0 {
 				User.Role = *Role
@@ -163,7 +163,7 @@ func EditUser(db *database.Database) fiber.Handler {
 
 		err := ctx.JSON(User)
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of a user: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a user: "+err.Error())
 		}
 		return err
 	}
@@ -176,11 +176,11 @@ func DeleteUser(db *database.Database) fiber.Handler {
 		var User models.User
 		// services.Find(&User, id)
 		if response := services.GetUser(db, &User, id); response.Error != nil {
-			return utils.SendError(ctx, "An error occurred when finding the user to be deleted"+response.Error.Error(), fiber.StatusNotFound)
+			return fiber.NewError(fiber.StatusNotFound, "An error occurred when finding the user to be deleted"+response.Error.Error())
 		}
 		// userID := ctx.Locals(constants.USER_LOCALS_KEY)
 		// if userID != User.ID {
-		// 	return utils.SendError(ctx, "Unauthorized user", fiber.StatusUnauthorized)
+		// 	return fiber.fiber.StatusUnauthorized, NewError("Unauthorized user")
 		// }
 		services.DeleteUser(db, &User)
 
@@ -189,7 +189,7 @@ func DeleteUser(db *database.Database) fiber.Handler {
 			"Deleted": true,
 		})
 		if err != nil {
-			return utils.SendError(ctx, "Error occurred when returning JSON of a user: "+err.Error(), fiber.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a user: "+err.Error())
 		}
 		return err
 	}
