@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate, useRoutes } from "react-router-dom";
-import { User } from "../../DAL/stores/auth";
+import { User } from "../../DAL/services/auth/auth";
 import { DataObject, DataObjectState } from "../../DAL/stores/types";
 import { appRoutes } from "../../routes";
 
@@ -16,7 +16,6 @@ function App(props: Props) {
 
     useEffect(() => {
         if (user.state === DataObjectState.Failed) {
-
             const from = location.state?.from?.pathname || "/";
             navigate("/login", { state: { from } });
         }

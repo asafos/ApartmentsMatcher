@@ -1,6 +1,6 @@
 import { AMSHttpClient } from "../../clients/AMS";
 
-type User = {
+export type User = {
     id: number
 }
 

@@ -2,14 +2,12 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // Apartment model
 type Apartment struct {
-	gorm.Model
-	UserID         uint
+	CommonModelFields
+	UserID         uint      `json:"user_id"`
 	NumberOfRooms  int       `json:"numberOfRooms"`
 	Price          int       `json:"price"`
 	Balcony        bool      `json:"balcony"`

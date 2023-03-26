@@ -1,10 +1,6 @@
 import { create } from "zustand";
-import { facebookLogin, fetchUser, googleLogin } from "../services/auth/auth";
+import { facebookLogin, fetchUser, googleLogin, User } from "../services/auth/auth";
 import { DataObject, DataObjectState } from "./types";
-
-export type User = {
-    id: number
-}
 
 interface State {
     user: DataObject<null | User>

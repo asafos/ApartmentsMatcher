@@ -1,12 +1,8 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 // ApartmentPref model
 type ApartmentPref struct {
-	gorm.Model
+	CommonModelFields
 	UserID         uint
 	NumberOfRooms  Range         `json:"numberOfRooms" gorm:"type:text"`
 	Price          Range         `json:"price" gorm:"type:text"`
