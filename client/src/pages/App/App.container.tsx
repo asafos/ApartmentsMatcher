@@ -15,7 +15,7 @@ function AppContainer() {
     }, [user])
 
     return (
-        <App user={user} />
+        <App user={user} apartment={apartment} />
     );
 }
 
