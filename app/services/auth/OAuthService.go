@@ -197,7 +197,7 @@ func GetFacebookUser(access_token string) (*OAuthUser, error) {
 	return GetOAuthUser(rootUrl, nil)
 }
 
-func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Database, oauthUser *OAuthUser, jwtSecret string) (*models.User, error) {
+func AddOAuthUser(ctx *fiber.Ctx, db *database.Database, oauthUser *OAuthUser) (*models.User, error) {
 	User := new(models.User)
 	User.Email = oauthUser.Email
 	User.Name = oauthUser.Name
@@ -207,6 +207,26 @@ func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Databas
 		return nil, fiber.NewError(fiber.StatusInternalServerError, "an error occurred when storing the new user"+response.Error.Error())
 	}
 
+	return User, nil
+}
+
+func TryAddOAuthUser(ctx *fiber.Ctx, db *database.Database, session *session.Session, oauthUser *OAuthUser, jwtSecret string) (user *models.User, err error) {
+	var User *models.User
+	User, err = apiServices.FindUserByOAuthID(db, oauthUser.Id)
+	if User.ID == 0 {
+		User, err = AddOAuthUser(ctx, db, oauthUser)
+	}
+	if err != nil {
+		return nil, err
+	}
+	err = SerializeUser(ctx, session, User, jwtSecret)
+	if err != nil {
+		return nil, err
+	}
+	return User, nil
+}
+
+func SerializeUser(ctx *fiber.Ctx, session *session.Session, User *models.User, jwtSecret string) error {
 	store := session.Get(ctx)
 	store.Set(constants.USER_ID_SESSION_KEY, User.ID)
 	defer store.Save()
@@ -219,7 +239,7 @@ func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Databas
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	cookie := fiber.Cookie{
 		Name:     constants.JWT_COOKIE_NAME,
@@ -231,8 +251,7 @@ func AddOAuthUser(ctx *fiber.Ctx, session *session.Session, db *database.Databas
 
 	// set the cookies in the response
 	ctx.Cookie(&cookie)
-
-	return User, nil
+	return nil
 }
 
 func GetGoogleOauthToken(code string, config configuration.Config) (*OAuthToken, error) {

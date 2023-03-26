@@ -1,6 +1,7 @@
 package serviceApi
 
 import (
+	"errors"
 	"fiber-boilerplate/app/models"
 	"fiber-boilerplate/database"
 
@@ -25,4 +26,14 @@ func EditUser(db *database.Database, dest *models.User) *gorm.DB {
 
 func DeleteUser(db *database.Database, dest *models.User) *gorm.DB {
 	return db.Delete(dest)
+}
+func FindUserByOAuthID(db *database.Database, oAuthID string) (*models.User, error) {
+	User := new(models.User)
+	if response := db.Where("oauth_id = ?", oAuthID).First(&User); response.Error != nil {
+		return nil, response.Error
+	}
+	if User.ID == 0 {
+		return User, errors.New("user not found")
+	}
+	return User, nil
 }

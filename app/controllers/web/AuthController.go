@@ -38,11 +38,10 @@ func AuthorizeGoogle(config configuration.Config, session *session.Session, db *
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-		User, err := authServices.AddOAuthUser(ctx, session, db, oauthUser, config.GetString("JWT_SECRET"))
+		User, err := authServices.TryAddOAuthUser(ctx, db, session, oauthUser, config.GetString("JWT_SECRET"))
 		if err != nil {
-			return err
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-
 		ctx.JSON(User)
 		return nil
 	}
@@ -61,16 +60,14 @@ func AuthorizeFacebook(config configuration.Config, session *session.Session, db
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-
 		oauthUser, err := authServices.GetFacebookUser(oauthToken.Access_token)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-		User, err := authServices.AddOAuthUser(ctx, session, db, oauthUser, config.GetString("JWT_SECRET"))
+		User, err := authServices.TryAddOAuthUser(ctx, db, session, oauthUser, config.GetString("JWT_SECRET"))
 		if err != nil {
-			return err
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
-
 		ctx.JSON(User)
 		return nil
 	}
