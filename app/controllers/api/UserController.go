@@ -16,18 +16,6 @@ func GetAllUsers(db *database.Database) fiber.Handler {
 		if response := services.GetAllUsers(db, &Users); response.Error != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred while retrieving users from the database: "+response.Error.Error())
 		}
-		// Match roles to users
-		for index, User := range Users {
-			if User.RoleID != 0 {
-				Role := new(models.Role)
-				if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-					return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the role: "+response.Error.Error())
-				}
-				if Role.ID != 0 {
-					Users[index].Role = *Role
-				}
-			}
-		}
 		err := ctx.JSON(Users)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of users: "+err.Error())
@@ -61,16 +49,6 @@ func GetUser(db *database.Database) fiber.Handler {
 		// if userID != User.ID {
 		// 	return fiber.fiber.StatusUnauthorized, NewError("Unauthorized user")
 		// }
-		// Match role to user
-		if User.RoleID != 0 {
-			Role := new(models.Role)
-			if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-				return fiber.NewError(fiber.StatusInternalServerError, "An error occurred when retrieving the role: "+response.Error.Error())
-			}
-			if Role.ID != 0 {
-				User.Role = *Role
-			}
-		}
 		err := ctx.JSON(User)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of a user: "+err.Error())
@@ -88,16 +66,6 @@ func AddUser(db *database.Database) fiber.Handler {
 		}
 		if response := services.AddUser(db, User); response.Error != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "an error occurred when storing the new user"+response.Error.Error())
-		}
-		// Match role to user
-		if User.RoleID != 0 {
-			Role := new(models.Role)
-			if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-				return fiber.NewError(fiber.StatusInternalServerError, "an error occurred when retrieving the role"+response.Error.Error())
-			}
-			if Role.ID != 0 {
-				User.Role = *Role
-			}
 		}
 		errors := utils.ValidateStruct(*User)
 		if errors != nil {
@@ -148,16 +116,6 @@ func EditUser(db *database.Database) fiber.Handler {
 		User.Name = EditUser.Name
 		User.Email = EditUser.Email
 		User.RoleID = EditUser.RoleID
-		// Match role to user
-		if User.RoleID != 0 {
-			Role := new(models.Role)
-			if response := services.GetRole(db, Role, User.RoleID); response.Error != nil {
-				return fiber.NewError(fiber.StatusBadRequest, "An error occurred when retrieving the role"+response.Error.Error())
-			}
-			if Role.ID != 0 {
-				User.Role = *Role
-			}
-		}
 		// Save user
 		services.EditUser(db, User)
 

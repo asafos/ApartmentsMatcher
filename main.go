@@ -66,11 +66,6 @@ func main() {
 			fmt.Println("failed to connect to database: db variable is nil")
 		} else {
 			app.DB = db
-			err := app.DB.AutoMigrate(&models.Role{})
-			if err != nil {
-				fmt.Println("failed to automigrate role model:", err.Error())
-				return
-			}
 			err = app.DB.AutoMigrate(&models.User{})
 			if err != nil {
 				fmt.Println("failed to automigrate user model:", err.Error())

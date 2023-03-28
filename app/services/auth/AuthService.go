@@ -67,15 +67,5 @@ func FindUserByID(db *database.Database, id uint) (*models.User, error) {
 	if User.ID == 0 {
 		return User, errors.New("user not found")
 	}
-	// Match role to user
-	if User.RoleID != 0 {
-		Role := new(models.Role)
-		if res := db.Find(&Role, User.RoleID); res.Error != nil {
-			return User, errors.New("error when retrieving the role of the user")
-		}
-		if Role.ID != 0 {
-			User.Role = *Role
-		}
-	}
 	return User, nil
 }
