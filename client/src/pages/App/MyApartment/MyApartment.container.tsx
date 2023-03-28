@@ -1,17 +1,10 @@
-import { useEffect } from "react";
-import { Apartment } from "../../../DAL/services/apartments/apartments";
-import { useApartmentsStore } from "../../../DAL/stores/apartments";
-import { useAuthStore } from "../../../DAL/stores/auth";
-import { MyApartment } from "./MyApartment";
+// import { useApartmentsStore } from '../../../DAL/stores/apartments'
+import { MyApartment } from './MyApartment'
 
-type Props = {
-}
+const MyApartmentContainer = () => {
+  // const apartment = useApartmentsStore(({ apartment }) => apartment)
 
-const MyApartmentContainer = (props: Props) => {
-    const { } = props
-    const apartment = useApartmentsStore(({ apartment }) => apartment)
-
-    return <MyApartment apartment={apartment.data} />;
+  return <MyApartment />
 }
 
 export { MyApartmentContainer }

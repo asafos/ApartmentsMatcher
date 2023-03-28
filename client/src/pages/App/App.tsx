@@ -1,31 +1,25 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate, useRoutes } from "react-router-dom";
-import { Apartment } from "../../DAL/services/apartments/apartments";
-import { User } from "../../DAL/services/auth/auth";
-import { appRoutes } from "../../routes";
+import { useRoutes } from 'react-router-dom'
+import { User } from '../../DAL/services/auth/auth'
+import { appRoutes } from '../../routes'
 
 type Props = {
-    user: User | null
-    isLoading: boolean
+  user: User | null
+  isLoading: boolean
 }
 
 function App(props: Props) {
-    const { user, isLoading } = props
-    const routeResult = useRoutes(appRoutes);
+  const { user, isLoading } = props
+  const routeResult = useRoutes(appRoutes)
 
-    if (isLoading) {
-        return null
-    }
+  if (isLoading) {
+    return null
+  }
 
-    if (!user) {
-        return null
-    }
+  if (!user) {
+    return null
+  }
 
-    return (
-        <>
-            {routeResult}
-        </>
-    );
+  return <>{routeResult}</>
 }
 
-export { App };
+export { App }
