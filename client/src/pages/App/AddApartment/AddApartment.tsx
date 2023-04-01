@@ -47,7 +47,6 @@ const AddApartment = (props: Props) => {
           }}
           validationSchema={validationSchema}
           onSubmit={(values) => {
-            console.log('!@# ~ file: AddApartment.tsx:55 ~ AddApartment ~ values:', values)
             const formattedValues = {
               ...values,
               // availableDates: values.availableDates.map(d => d.toISOString()),
