@@ -2,6 +2,9 @@ package serviceApi
 
 import (
 	"fiber-boilerplate/app/models"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 func dateRangesOverlap(dateSliceA, dateSliceB models.TimeSlice) bool {
@@ -46,4 +49,88 @@ func GetMatchingApartments(apartments []models.Apartment, apartmentPrefs []model
 		MatchingApartmentsPerPref[ap.ID] = MatchingApartments
 	}
 	return &MatchingApartmentsPerPref
+}
+
+type MatchingResults struct {
+	Couples    [][]uint
+	Threesomes [][]uint
+}
+
+func GetMatches(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *MatchingResults {
+	MatchingApartmentsPerPref := make(map[uint][]uint)
+	ApartmentPrefIDByApartmentID := make(map[uint]uint)
+	UserIDByApartmentPrefID := make(map[uint]uint)
+	for _, ap := range apartmentPrefs {
+		var MatchingApartmentsIDs []uint
+		for _, a := range apartments {
+			if IsApartmentMatchesPref(&a, &ap) {
+				MatchingApartmentsIDs = append(MatchingApartmentsIDs, a.ID)
+			}
+			if ap.UserID == a.UserID {
+				ApartmentPrefIDByApartmentID[a.ID] = ap.ID
+			}
+		}
+		MatchingApartmentsPerPref[ap.ID] = MatchingApartmentsIDs
+		UserIDByApartmentPrefID[ap.ID] = ap.UserID
+	}
+
+	var MatchingUsersFirstRelation [][]uint
+	var MatchingUsersSecondRelation [][]uint
+	MatchesString := make(map[string]bool)
+
+	for apID1, matches1 := range MatchingApartmentsPerPref {
+		for _, aID2 := range matches1 {
+			apID2 := ApartmentPrefIDByApartmentID[aID2]
+			matches2 := MatchingApartmentsPerPref[apID2]
+			if apID1 == apID2 {
+				break
+			}
+			for _, aID3 := range matches2 {
+				apID3 := ApartmentPrefIDByApartmentID[aID3]
+				if apID2 == apID3 {
+					break
+				}
+				matches3 := MatchingApartmentsPerPref[apID3]
+				// check if threesome match
+				for _, aID4 := range matches3 {
+					apID4 := ApartmentPrefIDByApartmentID[aID4]
+					if apID3 == apID4 {
+						break
+					}
+					if apID1 == apID4 {
+						MatchingUsers := []uint{UserIDByApartmentPrefID[apID1], UserIDByApartmentPrefID[apID2], UserIDByApartmentPrefID[apID3]}
+						MatchString := FormatMatchString(MatchingUsers)
+						if _, ok := MatchesString[MatchString]; !ok {
+							MatchesString[MatchString] = true
+							MatchingUsersSecondRelation = append(MatchingUsersSecondRelation, MatchingUsers)
+						}
+					}
+				}
+				// check if couple match
+				if apID1 == apID3 {
+					MatchingUsers := []uint{UserIDByApartmentPrefID[apID1], UserIDByApartmentPrefID[apID2]}
+					MatchString := FormatMatchString(MatchingUsers)
+					if _, ok := MatchesString[MatchString]; !ok {
+						MatchesString[MatchString] = true
+						MatchingUsersFirstRelation = append(MatchingUsersFirstRelation, MatchingUsers)
+					}
+				}
+			}
+		}
+	}
+
+	return &MatchingResults{
+		Couples:    MatchingUsersFirstRelation,
+		Threesomes: MatchingUsersSecondRelation,
+	}
+}
+
+func FormatMatchString(slice []uint) string {
+	sort.Slice(slice, func(i, j int) bool { return slice[i] < slice[j] })
+	valuesText := []string{}
+	for _, val := range slice {
+		text := strconv.FormatUint(uint64(val), 10)
+		valuesText = append(valuesText, text)
+	}
+	return strings.Join(valuesText[:], ",")
 }

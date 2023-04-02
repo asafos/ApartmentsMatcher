@@ -84,6 +84,21 @@ func main() {
 		}
 	}
 
+	// mockApartment := models.Apartment{
+	// 	UserID:         2,
+	// 	NumberOfRooms:  2,
+	// 	Price:          3000,
+	// 	Balcony:        func(b bool) *bool { return &b }(true),
+	// 	Roof:           func(b bool) *bool { return &b }(false),
+	// 	Parking:        func(b bool) *bool { return &b }(true),
+	// 	Elevator:       func(b bool) *bool { return &b }(true),
+	// 	PetsAllowed:    func(b bool) *bool { return &b }(true),
+	// 	Renovated:      func(b bool) *bool { return &b }(false),
+	// 	AvailableDates: models.TimeSlice{time.Now(), time.Now().AddDate(0, 2, 0)},
+	// 	Location:       "LevTLV",
+	// }
+	// db.Create(&mockApartment)
+
 	app.registerMiddlewares(config, app.Session, app.DB)
 
 	// Register web routes
@@ -270,11 +285,11 @@ func (app *App) registerMiddlewares(config *configuration.Config, session *sessi
 
 	// TODO: Middleware - Timeout
 
-	jwtSecret := config.GetString("JWT_SECRET")
+	// jwtSecret := config.GetString("JWT_SECRET")
 
-	app.Use("/api", middleware.Auth(session, jwtSecret))
-	app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
-	app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
+	// app.Use("/api", middleware.Auth(session, jwtSecret))
+	// app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
+	// app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
 }
 
 // Stop the Fiber application
