@@ -52,8 +52,8 @@ func GetMatchingApartments(apartments []models.Apartment, apartmentPrefs []model
 }
 
 type MatchingResults struct {
-	Couples    [][]uint
-	Threesomes [][]uint
+	Couples    [][]uint `json:"couples"`
+	Threesomes [][]uint `json:"threesomes"`
 }
 
 func GetMatches(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *MatchingResults {

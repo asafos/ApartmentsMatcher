@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-redis/cache/v8"
 	"github.com/spf13/viper"
 
 	hashing "github.com/thomasvvugt/fiber-hashing"
@@ -15,6 +16,7 @@ import (
 	"github.com/gofiber/session/v2/provider/mysql"
 	"github.com/jameskeane/bcrypt"
 
+	redisCache "github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 
 	fsession "github.com/fasthttp/session/v2"
@@ -393,6 +395,16 @@ func (config *Config) setFiberConfig() {
 
 func (config *Config) GetFiberConfig() *fiber.Config {
 	return config.fiber
+}
+
+func (config *Config) GetCacheConfig() *cache.Options {
+
+	rdb := redisCache.NewClient(&redisCache.Options{
+		Addr: config.GetString("REDIS_CACHE_ADDR"),
+	})
+	return &cache.Options{
+		Redis: rdb,
+	}
 }
 
 func (config *Config) GetHasherConfig() hashing.Config {

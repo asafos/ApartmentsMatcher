@@ -13,6 +13,7 @@ import (
 
 	// hashing "github.com/thomasvvugt/fiber-hashing"
 
+	redisCache "github.com/go-redis/cache/v8"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/gofiber/fiber/v2/middleware/cache"
@@ -37,6 +38,7 @@ type App struct {
 	DB *database.Database
 	// Hasher  hashing.Driver
 	Session *session.Session
+	Cache   *redisCache.Cache
 }
 
 func main() {
@@ -46,6 +48,7 @@ func main() {
 		App: fiber.New(*config.GetFiberConfig()),
 		// Hasher:  hashing.New(config.GetHasherConfig()),
 		Session: session.New(config.GetSessionConfig()),
+		Cache:   redisCache.New(config.GetCacheConfig()),
 	}
 
 	// Initialize database
