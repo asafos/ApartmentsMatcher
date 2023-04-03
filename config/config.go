@@ -401,6 +401,7 @@ func (config *Config) GetCacheConfig() *cache.Options {
 
 	rdb := redisCache.NewClient(&redisCache.Options{
 		Addr: config.GetString("REDIS_CACHE_ADDR"),
+		DB:   config.GetInt("REDIS_CACHE_DATABASE"),
 	})
 	return &cache.Options{
 		Redis: rdb,

@@ -9,6 +9,7 @@ require (
 	github.com/fasthttp/session/v2 v2.2.4
 	github.com/go-playground/validator/v10 v10.12.0
 	github.com/go-redis/cache/v8 v8.4.4 // indirect
+	github.com/go-redis/redis/v8 v8.11.3 // indirect
 	github.com/gofiber/fiber/v2 v2.38.1
 	github.com/gofiber/session/v2 v2.0.2
 	github.com/jameskeane/bcrypt v0.0.0-20120420032655-c3cd44c1e20f
