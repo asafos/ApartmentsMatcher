@@ -115,7 +115,7 @@ func main() {
 	// Register application API routes (using the /api/v1 group)
 	api := app.Group("/api")
 	apiv1 := api.Group("/v1")
-	routes.RegisterAPI(apiv1, app.DB)
+	routes.RegisterAPI(apiv1, app.DB, app.Cache)
 
 	// Register static routes for the public directory
 	app.Static("/", "./public")

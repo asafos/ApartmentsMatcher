@@ -4,14 +4,15 @@ import (
 	Controller "fiber-boilerplate/app/controllers/api"
 	"fiber-boilerplate/database"
 
+	"github.com/go-redis/cache/v8"
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterAPI(api fiber.Router, db *database.Database) {
+func RegisterAPI(api fiber.Router, db *database.Database, appCache *cache.Cache) {
 	registerUsers(api, db)
 	registerApartments(api, db)
 	registerApartmentPrefs(api, db)
-	registerMatching(api, db)
+	registerMatching(api, db, appCache)
 }
 
 func registerUsers(api fiber.Router, db *database.Database) {
@@ -45,9 +46,9 @@ func registerApartmentPrefs(api fiber.Router, db *database.Database) {
 	users.Delete("/:id", Controller.DeleteApartmentPref(db))
 }
 
-func registerMatching(api fiber.Router, db *database.Database) {
+func registerMatching(api fiber.Router, db *database.Database, appCache *cache.Cache) {
 	users := api.Group("/match")
 
 	users.Get("/user/:id", Controller.GetUserMatchingApartments(db))
-	users.Get("/", Controller.GetMatches(db))
+	users.Get("/", Controller.GetMatches(db, appCache))
 }

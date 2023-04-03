@@ -6,6 +6,7 @@ import (
 	"fiber-boilerplate/database"
 	"strconv"
 
+	"github.com/go-redis/cache/v8"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -38,7 +39,7 @@ func GetUserMatchingApartments(db *database.Database) fiber.Handler {
 }
 
 // Return all apartments as JSON
-func GetMatches(db *database.Database) fiber.Handler {
+func GetMatches(db *database.Database, appCache *cache.Cache) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		var Apartments []models.Apartment
 		var ApartmentsPref []models.ApartmentPref
@@ -51,9 +52,17 @@ func GetMatches(db *database.Database) fiber.Handler {
 
 		matchingApartments := services.GetMatches(Apartments, ApartmentsPref)
 
+		if err := appCache.Set(&cache.Item{
+			Key:   "matches",
+			Value: matchingApartments,
+			// TTL:   time.Hour,
+		}); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when persisting matches: "+err.Error())
+		}
+
 		err := ctx.JSON(matchingApartments)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of apartments: "+err.Error())
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of matches: "+err.Error())
 		}
 		return nil
 	}
