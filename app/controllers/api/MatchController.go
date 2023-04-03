@@ -39,7 +39,7 @@ func GetUserMatchingApartments(db *database.Database) fiber.Handler {
 }
 
 // Return all apartments as JSON
-func GetMatches(db *database.Database, appCache *cache.Cache) fiber.Handler {
+func GenerateMatches(db *database.Database, appCache *cache.Cache) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		var Apartments []models.Apartment
 		var ApartmentsPref []models.ApartmentPref
@@ -50,7 +50,7 @@ func GetMatches(db *database.Database, appCache *cache.Cache) fiber.Handler {
 			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred while retrieving apartmentPrefs from the database: "+response.Error.Error())
 		}
 
-		matchingApartments := services.GetMatches(Apartments, ApartmentsPref)
+		matchingApartments := services.GenerateMatches(Apartments, ApartmentsPref)
 
 		if err := appCache.Set(&cache.Item{
 			Key:   "matches",

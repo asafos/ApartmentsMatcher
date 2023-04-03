@@ -56,7 +56,7 @@ type MatchingResults struct {
 	Threesomes [][]uint `json:"threesomes"`
 }
 
-func GetMatches(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *MatchingResults {
+func GenerateMatches(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *MatchingResults {
 	MatchingApartmentsPerPref := make(map[uint][]uint)
 	ApartmentPrefIDByApartmentID := make(map[uint]uint)
 	UserIDByApartmentPrefID := make(map[uint]uint)
