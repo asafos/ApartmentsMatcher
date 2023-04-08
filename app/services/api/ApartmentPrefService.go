@@ -19,6 +19,10 @@ func GetApartmentPref(db *database.Database, dest *models.ApartmentPref, id stri
 	return db.Find(&dest, id)
 }
 
+func GetApartmentPrefsByUserID(db *database.Database, dest *[]models.ApartmentPref, id string) *gorm.DB {
+	return db.Find(&dest, "user_id = ?", id)
+}
+
 func AddApartmentPref(db *database.Database, dest *models.ApartmentPref) *gorm.DB {
 	return db.Create(dest)
 }

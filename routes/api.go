@@ -41,6 +41,7 @@ func registerApartmentPrefs(api fiber.Router, db *database.Database) {
 
 	users.Get("/", Controller.GetAllApartmentPrefs(db))
 	users.Get("/:id", Controller.GetApartmentPref(db))
+	users.Get("/user/:id", Controller.GetUserApartmentPrefs(db))
 	users.Post("/", Controller.AddApartmentPref(db))
 	users.Put("/:id", Controller.EditApartmentPref(db))
 	users.Delete("/:id", Controller.DeleteApartmentPref(db))

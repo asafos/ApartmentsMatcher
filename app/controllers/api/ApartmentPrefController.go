@@ -6,6 +6,7 @@ import (
 	"fiber-boilerplate/app/models"
 	services "fiber-boilerplate/app/services/api"
 	"fiber-boilerplate/database"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,6 +21,30 @@ func GetAllApartmentPrefs(db *database.Database) fiber.Handler {
 		err := ctx.JSON(ApartmentPrefs)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of apartmentPrefs: "+err.Error())
+		}
+		return err
+	}
+}
+
+// Return apartmentPrefs as JSON
+func GetUserApartmentPrefs(db *database.Database) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		id := ctx.Params("id")
+		intID, err := strconv.ParseUint(id, 10, 32)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+		userID := ctx.Locals(constants.USER_LOCALS_KEY)
+		if userID != uint(intID) {
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized user")
+		}
+		var ApartmentPref []models.ApartmentPref
+		if response := services.GetApartmentPrefsByUserID(db, &ApartmentPref, id); response.Error != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred while retrieving apartments from the database: "+response.Error.Error())
+		}
+		err = ctx.JSON(ApartmentPref)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "Error occurred when returning JSON of apartments: "+err.Error())
 		}
 		return err
 	}
