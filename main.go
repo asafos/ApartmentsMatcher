@@ -142,6 +142,7 @@ func main() {
 	// Start listening on the specified address
 	err = app.Listen(config.GetString("APP_ADDR"))
 	if err != nil {
+		fmt.Println("failed to listen on app addr:", err.Error())
 		app.exit()
 	}
 }

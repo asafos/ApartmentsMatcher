@@ -1,10 +1,13 @@
 package serviceApi
 
 import (
+	"context"
 	"fiber-boilerplate/app/models"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/go-redis/cache/v8"
 )
 
 func dateRangesOverlap(dateSliceA, dateSliceB models.TimeSlice) bool {
@@ -56,73 +59,138 @@ type MatchingResults struct {
 	Threesomes [][]uint `json:"threesomes"`
 }
 
-func GenerateMatches(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref) *MatchingResults {
+const (
+	MATCHES_PREFIX              = "MATCHES:"
+	ALL_MATCHES                 = "ALL"
+	APARTMENT_PREF_MATCHES      = "APARTMENT_PREF:"
+	APARTMENT_PREF_BY_APARTMENT = "APARTMENT_PREF_BY_APARTMENT"
+	USER_BY_APARTMENT_PREF      = "APARTMENT_PREF_BY_APARTMENT"
+)
+
+func GenerateApartmentPrefMatchesCacheKey(apID uint) string {
+	return MATCHES_PREFIX + APARTMENT_PREF_MATCHES + strconv.FormatUint(uint64(apID), 10)
+}
+
+func GenerateMatchingApartmentsPerPref(apartments []models.Apartment, apartmentPrefs []models.ApartmentPref, appCache *cache.Cache) (matches *map[uint][]uint, err error) {
 	MatchingApartmentsPerPref := make(map[uint][]uint)
 	ApartmentPrefIDByApartmentID := make(map[uint]uint)
 	UserIDByApartmentPrefID := make(map[uint]uint)
 	for _, ap := range apartmentPrefs {
 		var MatchingApartmentsIDs []uint
 		for _, a := range apartments {
-			if IsApartmentMatchesPref(&a, &ap) {
-				MatchingApartmentsIDs = append(MatchingApartmentsIDs, a.ID)
-			}
 			if ap.UserID == a.UserID {
 				ApartmentPrefIDByApartmentID[a.ID] = ap.ID
+			} else if IsApartmentMatchesPref(&a, &ap) {
+				MatchingApartmentsIDs = append(MatchingApartmentsIDs, a.ID)
 			}
 		}
 		MatchingApartmentsPerPref[ap.ID] = MatchingApartmentsIDs
+		if err := appCache.Set(&cache.Item{
+			Key:   GenerateApartmentPrefMatchesCacheKey(ap.ID),
+			Value: MatchingApartmentsIDs,
+		}); err != nil {
+			return nil, err
+		}
 		UserIDByApartmentPrefID[ap.ID] = ap.UserID
 	}
 
-	var MatchingUsersFirstRelation [][]uint
-	var MatchingUsersSecondRelation [][]uint
-	MatchesString := make(map[string]bool)
+	if err := appCache.Set(&cache.Item{
+		Key:   MATCHES_PREFIX + APARTMENT_PREF_BY_APARTMENT,
+		Value: ApartmentPrefIDByApartmentID,
+	}); err != nil {
+		return nil, err
+	}
 
-	for apID1, matches1 := range MatchingApartmentsPerPref {
-		for _, aID2 := range matches1 {
-			apID2 := ApartmentPrefIDByApartmentID[aID2]
-			matches2 := MatchingApartmentsPerPref[apID2]
-			if apID1 == apID2 {
-				break
+	if err := appCache.Set(&cache.Item{
+		Key:   MATCHES_PREFIX + USER_BY_APARTMENT_PREF,
+		Value: UserIDByApartmentPrefID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return &MatchingApartmentsPerPref, nil
+}
+
+type MatchItem struct {
+	UserID              uint
+	ApartmentID         uint
+	ApartmentPrefID     uint
+	MatchingApartmentID uint
+}
+
+type Match []MatchItem
+
+func GetMatchingApartmentsByPref(ap models.ApartmentPref, appCache *cache.Cache) (matches []Match, err error) {
+	var matches1 []uint
+	var apartmentPrefIDByApartmentID map[uint]uint
+	var userIDByApartmentPrefID map[uint]uint
+	if err := appCache.Get(context.Background(), GenerateApartmentPrefMatchesCacheKey(ap.ID), &matches1); err != nil {
+		return nil, err
+	}
+	if err := appCache.Get(context.Background(), MATCHES_PREFIX+APARTMENT_PREF_BY_APARTMENT, &apartmentPrefIDByApartmentID); err != nil {
+		return nil, err
+	}
+	if err := appCache.Get(context.Background(), MATCHES_PREFIX+USER_BY_APARTMENT_PREF, &userIDByApartmentPrefID); err != nil {
+		return nil, err
+	}
+
+	apID1 := ap.ID
+	var aID1 uint
+	for key, item := range apartmentPrefIDByApartmentID {
+		if apID1 == item {
+			aID1 = key
+		}
+	}
+	matchesResult := []Match{}
+
+	for _, aID2 := range matches1 {
+		apID2 := apartmentPrefIDByApartmentID[aID2]
+		var matches2 []uint
+		if err := appCache.Get(context.Background(), GenerateApartmentPrefMatchesCacheKey(apID2), &matches2); err != nil {
+			return nil, err
+		}
+		for _, aID3 := range matches2 {
+			apID3 := apartmentPrefIDByApartmentID[aID3]
+			var matches3 []uint
+			if err := appCache.Get(context.Background(), GenerateApartmentPrefMatchesCacheKey(apID3), &matches3); err != nil {
+				return nil, err
 			}
-			for _, aID3 := range matches2 {
-				apID3 := ApartmentPrefIDByApartmentID[aID3]
-				if apID2 == apID3 {
-					break
+			// check if threesome match
+			for _, aID4 := range matches3 {
+				apID4 := apartmentPrefIDByApartmentID[aID4]
+
+				if apID1 == apID4 {
+					matchesResult = append(matchesResult, Match{
+						MatchItem{UserID: userIDByApartmentPrefID[apID1], ApartmentID: aID1, ApartmentPrefID: apID1, MatchingApartmentID: apID2},
+						MatchItem{UserID: userIDByApartmentPrefID[apID2], ApartmentID: aID2, ApartmentPrefID: apID2, MatchingApartmentID: apID3},
+						MatchItem{UserID: userIDByApartmentPrefID[apID3], ApartmentID: aID3, ApartmentPrefID: apID3, MatchingApartmentID: apID1},
+					})
 				}
-				matches3 := MatchingApartmentsPerPref[apID3]
-				// check if threesome match
-				for _, aID4 := range matches3 {
-					apID4 := ApartmentPrefIDByApartmentID[aID4]
-					if apID3 == apID4 {
-						break
-					}
-					if apID1 == apID4 {
-						MatchingUsers := []uint{UserIDByApartmentPrefID[apID1], UserIDByApartmentPrefID[apID2], UserIDByApartmentPrefID[apID3]}
-						MatchString := FormatMatchString(MatchingUsers)
-						if _, ok := MatchesString[MatchString]; !ok {
-							MatchesString[MatchString] = true
-							MatchingUsersSecondRelation = append(MatchingUsersSecondRelation, MatchingUsers)
-						}
-					}
-				}
-				// check if couple match
-				if apID1 == apID3 {
-					MatchingUsers := []uint{UserIDByApartmentPrefID[apID1], UserIDByApartmentPrefID[apID2]}
-					MatchString := FormatMatchString(MatchingUsers)
-					if _, ok := MatchesString[MatchString]; !ok {
-						MatchesString[MatchString] = true
-						MatchingUsersFirstRelation = append(MatchingUsersFirstRelation, MatchingUsers)
-					}
-				}
+			}
+			// check if couple match
+			if apID1 == apID3 {
+				matchesResult = append(matchesResult, Match{
+					MatchItem{UserID: userIDByApartmentPrefID[apID1], ApartmentID: aID1, ApartmentPrefID: apID1, MatchingApartmentID: apID2},
+					MatchItem{UserID: userIDByApartmentPrefID[apID2], ApartmentID: aID2, ApartmentPrefID: apID2, MatchingApartmentID: apID1},
+				})
 			}
 		}
 	}
+	return matchesResult, nil
+}
 
-	return &MatchingResults{
-		Couples:    MatchingUsersFirstRelation,
-		Threesomes: MatchingUsersSecondRelation,
+func GetMatchingApartmentsByPrefs(apartmentPrefs []models.ApartmentPref, appCache *cache.Cache) (matches *map[uint][]Match, err error) {
+	MatchingApartmentsByPrefs := make(map[uint][]Match)
+
+	for _, ap := range apartmentPrefs {
+		matchingApartments, err := GetMatchingApartmentsByPref(ap, appCache)
+		if err != nil {
+			return nil, err
+		}
+		MatchingApartmentsByPrefs[ap.ID] = matchingApartments
 	}
+
+	return &MatchingApartmentsByPrefs, nil
 }
 
 func FormatMatchString(slice []uint) string {

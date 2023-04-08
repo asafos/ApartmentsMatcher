@@ -49,6 +49,7 @@ func registerApartmentPrefs(api fiber.Router, db *database.Database) {
 func registerMatching(api fiber.Router, db *database.Database, appCache *cache.Cache) {
 	users := api.Group("/match")
 
-	users.Get("/user/:id", Controller.GetUserMatchingApartments(db))
-	users.Get("/generate", Controller.GenerateMatches(db, appCache))
+	users.Get("/user/:id", Controller.GetUserMatches(db, appCache))
+	users.Post("/generate", Controller.GenerateMatches(db, appCache))
+	// users.Get("/", Controller.GetMatches(appCache))
 }
