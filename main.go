@@ -289,13 +289,13 @@ func (app *App) registerMiddlewares(config *configuration.Config, session *sessi
 
 	// TODO: Middleware - Timeout
 
-	if config.GetString("APP_ENV") != "local" {
-		jwtSecret := config.GetString("JWT_SECRET")
+	// if config.GetString("APP_ENV") != "local" {
+	jwtSecret := config.GetString("JWT_SECRET")
 
-		app.Use("/api", middleware.Auth(session, jwtSecret))
-		app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
-		app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
-	}
+	app.Use("/api", middleware.Auth(session, jwtSecret))
+	app.Use("/api/*/users", middleware.AdminRole(session, db, jwtSecret))
+	app.Use("/api/*/roles", middleware.AdminRole(session, db, jwtSecret))
+	// }
 }
 
 // Stop the Fiber application
