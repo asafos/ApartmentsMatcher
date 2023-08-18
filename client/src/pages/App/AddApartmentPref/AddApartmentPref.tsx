@@ -1,4 +1,3 @@
-import { ApartmentToAdd } from '../../../DAL/services/apartments/apartments'
 import { Formik, Field, FieldProps } from 'formik'
 import { Box, Flex, VStack, ButtonGroup } from '@chakra-ui/react'
 import {
@@ -10,9 +9,12 @@ import {
 } from 'formik-chakra-ui'
 import { RangeDatepicker } from 'chakra-dayzed-datepicker'
 import * as Yup from 'yup'
+import { ApartmentPrefToAdd } from '../../../DAL/services/apartmentPrefs/apartmentPrefs'
+import { locationLabelsMap } from '../../../DAL/services/types'
+import { MultiSelect } from 'chakra-multiselect'
 
 type Props = {
-  onSave: (apartment: Omit<ApartmentToAdd, 'user_id'>) => void
+  onSave: (apartment: Omit<ApartmentPrefToAdd, 'user_id'>) => void
 }
 
 const today = new Date()
@@ -22,70 +24,121 @@ const oneYearFromToday = new Date()
 oneYearFromToday.setFullYear(oneYearFromToday.getFullYear() + 1)
 
 const validationSchema = Yup.object({
-  numberOfRooms: Yup.number().min(1).max(30).required('number of rooms must be at least 1'),
-  price: Yup.number().min(1).max(40000).required('price cannot be 0'),
-  location: Yup.string().required('must choose a location'),
+  numberOfRoomsMin: Yup.number().min(1).max(30).required('number of rooms must be at least 1'),
+  numberOfRoomsMax: Yup.number().min(1).max(30).required('number of rooms must be at least 1'),
+  priceMin: Yup.number().min(1).max(40000).required('price cannot be 0'),
+  priceMax: Yup.number().min(1).max(40000).required('price cannot be 0'),
+  location: Yup.array().of(Yup.string()).min(1).required('must choose a location'),
 })
 
 const AddApartmentPref = (props: Props) => {
   const { onSave } = props
   return (
     <Flex align='center' justify='center' h='100%'>
-      <Box bg='white' p={6} rounded='md' w={64} minWidth='300px'>
+      <Box bg='white' p={6} rounded='md' w={64} minWidth='340px'>
         <Formik
-          initialValues={{
-            numberOfRooms: 0,
-            price: 0,
-            location: '',
-            availableDates: [today, today],
-            balcony: false,
-            roof: false,
-            parking: false,
-            elevator: false,
-            petsAllowed: false,
-            renovated: false,
+          initialValues={
+            {
+              numberOfRoomsMin: 1,
+              numberOfRoomsMax: 2,
+              priceMin: 1000,
+              priceMax: 2000,
+              location: [],
+              availableDates: [today, today],
+              balcony: false,
+              roof: false,
+              parking: false,
+              elevator: false,
+              petsAllowed: false,
+              renovated: false,
+            } as Omit<ApartmentPrefToAdd, 'user_id' | 'numberOfRooms' | 'price'> & {
+              numberOfRoomsMin: number
+              numberOfRoomsMax: number
+              priceMin: number
+              priceMax: number
+            }
+          }
+          validate={(values) => {
+            const errors: any = {}
+            if (values.priceMin > values.priceMax) {
+              errors.priceMax = 'Maximum price cannot go below maximum price'
+            } else if (values.numberOfRoomsMin > values.numberOfRoomsMax) {
+              errors.numberOfRoomsMax = 'Maximum rooms cannot go below maximum rooms'
+            }
+            return errors
           }}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            const formattedValues = {
+          onSubmit={({ priceMin, priceMax, numberOfRoomsMin, numberOfRoomsMax, ...values }) => {
+            const formattedValues: Omit<ApartmentPrefToAdd, 'user_id'> = {
               ...values,
               // availableDates: values.availableDates.map(d => d.toISOString()),
-              price: Number(values.price),
-              numberOfRooms: Number(values.numberOfRooms),
+              price: [Number(priceMin), Number(priceMax)],
+              numberOfRooms: [Number(numberOfRoomsMin), Number(numberOfRoomsMax)],
             }
             onSave(formattedValues)
           }}
         >
           {(formProps) => {
-            const { handleSubmit, errors, touched } = formProps
+            const { handleSubmit, errors, touched, setSubmitting } = formProps
 
             return (
               <VStack spacing={4} align='flex-start'>
                 <NumberInputControl
-                  isInvalid={!!errors.numberOfRooms && touched.numberOfRooms}
-                  name='numberOfRooms'
-                  label='Rooms'
+                  isInvalid={!!errors.numberOfRoomsMin && touched.numberOfRoomsMin}
+                  name='numberOfRoomsMin'
+                  label='Minimum Rooms'
                 />
+
                 <NumberInputControl
-                  showStepper={false}
-                  isInvalid={!!errors.price && touched.price}
-                  name='price'
-                  label='Price'
+                  isInvalid={!!errors.numberOfRoomsMax && touched.numberOfRoomsMax}
+                  name='numberOfRoomsMax'
+                  label='Maximum Rooms'
                 />
-                <SelectControl
-                  name='location'
-                  isInvalid={!!errors.location && touched.location}
-                  selectProps={{ placeholder: 'Select location' }}
-                >
-                  <option value='LevTLV'>Lev TLV</option>
-                  <option value='OldNorth'>Old North</option>
-                  <option value='NewNorth'>New North</option>
-                  <option value='Sarona'>Sarona</option>
-                  <option value='NeveTzedek'>Neve Tzedek</option>
-                  <option value='NeveShaanan'>Neve Shaanan</option>
-                  <option value='Florentin'>Florentin</option>
-                  <option value='RamatAviv'>Ramat Aviv</option>
-                </SelectControl>
+
+                <NumberInputControl
+                  isInvalid={!!errors.priceMin && touched.priceMin}
+                  name='priceMin'
+                  label='Minimum Price'
+                />
+
+                <NumberInputControl
+                  isInvalid={!!errors.priceMax && touched.priceMax}
+                  name='priceMax'
+                  label='Maximum Price'
+                />
+
+                <FormControl label='Locations' name='location'>
+                  <Field name={'location'} id={'lcoation'}>
+                    {({ field: { value }, form: { setFieldValue } }: FieldProps<Date[]>) => {
+                      console.log(
+                        '!@# ~ file: AddApartmentPref.tsx:113 ~ AddApartmentPref ~ value:',
+                        value,
+                      )
+
+                      return (
+                        value && (
+                          <MultiSelect
+                            options={Object.entries(locationLabelsMap).map(([value, label]) => ({
+                              label,
+                              value,
+                            }))}
+                            value={value}
+                            label='Select location'
+                            onChange={(val: any) => {
+                              setFieldValue(
+                                'location',
+                                val.map((value: any) =>
+                                  typeof value === 'string' ? value : value.value,
+                                ),
+                              )
+                            }}
+                          />
+                        )
+                      )
+                    }}
+                  </Field>
+                </FormControl>
+
                 <FormControl label='Available Dates' name='availableDates'>
                   <Field name={'availableDates'} id={'availableDates'}>
                     {({ field: { value }, form: { setFieldValue } }: FieldProps<Date[]>) => {

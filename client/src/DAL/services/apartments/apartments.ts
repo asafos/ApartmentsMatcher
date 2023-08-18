@@ -1,12 +1,13 @@
 import { AMSHttpClient } from '../../clients/AMS'
+import { Location } from '../types'
 
 export type Apartment = {
   id: number
   user_id: number
   numberOfRooms: number
   price: number
-  location: string
-  availableDates: Date[]
+  location: Location
+  availableDates: [Date, Date]
   balcony: boolean
   roof: boolean
   parking: boolean

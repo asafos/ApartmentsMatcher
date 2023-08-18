@@ -10,6 +10,7 @@ import {
 } from 'formik-chakra-ui'
 import { RangeDatepicker } from 'chakra-dayzed-datepicker'
 import * as Yup from 'yup'
+import { Location, locationLabelsMap } from '../../../DAL/services/types'
 
 type Props = {
   onSave: (apartment: Omit<ApartmentToAdd, 'user_id'>) => void
@@ -33,18 +34,20 @@ const AddApartment = (props: Props) => {
     <Flex align='center' justify='center' h='100%'>
       <Box bg='white' p={6} rounded='md' w={64} minWidth='300px'>
         <Formik
-          initialValues={{
-            numberOfRooms: 0,
-            price: 0,
-            location: '',
-            availableDates: [today, today],
-            balcony: false,
-            roof: false,
-            parking: false,
-            elevator: false,
-            petsAllowed: false,
-            renovated: false,
-          }}
+          initialValues={
+            {
+              numberOfRooms: 0,
+              price: 0,
+              location: Location.LevTLV,
+              availableDates: [today, today],
+              balcony: false,
+              roof: false,
+              parking: false,
+              elevator: false,
+              petsAllowed: false,
+              renovated: false,
+            } as Omit<ApartmentToAdd, 'user_id'>
+          }
           validationSchema={validationSchema}
           onSubmit={(values) => {
             const formattedValues = {
@@ -77,14 +80,11 @@ const AddApartment = (props: Props) => {
                   isInvalid={!!errors.location && touched.location}
                   selectProps={{ placeholder: 'Select location' }}
                 >
-                  <option value='LevTLV'>Lev TLV</option>
-                  <option value='OldNorth'>Old North</option>
-                  <option value='NewNorth'>New North</option>
-                  <option value='Sarona'>Sarona</option>
-                  <option value='NeveTzedek'>Neve Tzedek</option>
-                  <option value='NeveShaanan'>Neve Shaanan</option>
-                  <option value='Florentin'>Florentin</option>
-                  <option value='RamatAviv'>Ramat Aviv</option>
+                  {Object.entries(locationLabelsMap).map(([key, label]) => (
+                    <option value={key} key={key}>
+                      {label}
+                    </option>
+                  ))}
                 </SelectControl>
                 <FormControl label='Available Dates' name='availableDates'>
                   <Field name={'availableDates'} id={'availableDates'}>

@@ -3,14 +3,21 @@ import ReactDOM from 'react-dom/client'
 import { Main } from './Main'
 import reportWebVitals from './reportWebVitals'
 import { BrowserRouter } from 'react-router-dom'
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { MultiSelectTheme } from 'chakra-multiselect'
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+
+const theme = extendTheme({
+  components: {
+    MultiSelect: MultiSelectTheme,
+  },
+})
 
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <Main />
       </ChakraProvider>
     </BrowserRouter>
